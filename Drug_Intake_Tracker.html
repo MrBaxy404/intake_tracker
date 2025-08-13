@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Drug Intake Tracker — v6</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --card: #121731;
+      --card-2: #161c3e;
+      --text: #e7ecff;
+      --muted: #b9c0e6;
+      --accent: #4f7cff;
+      --accent-2: #8ea8ff;
+      --ok: #22c55e;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --radius: 14px;
+      --shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--text);
+      background: radial-gradient(1200px 700px at 10% -10%, #1b2350 0, transparent 60%),
+                  radial-gradient(800px 500px at 90% -10%, #1a255a 0, transparent 60%),
+                  var(--bg);
+    }
+
+    .container { max-width: 1100px; margin: 40px auto; padding: 24px; }
+
+    header h1 { font-size: clamp(22px, 3vw, 32px); margin: 0 0 6px; letter-spacing: 0.3px; }
+    header p { margin: 0 0 18px; color: var(--muted); }
+
+    .toolbar { display: flex; gap: 8px; margin-bottom: 16px; }
+    .toolbar button { padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); cursor: pointer; }
+    .toolbar button:hover { background: rgba(255,255,255,0.12); }
+
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+    .card { background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%); border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); position: relative; }
+
+    .card .remove { position: absolute; right: 10px; top: 10px; padding: 4px 8px; font-size: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); cursor: pointer; }
+    .card .remove:hover { background: rgba(255,255,255,0.12); }
+
+    .name { font-size: 16px; font-weight: 800; letter-spacing: .4px; margin: 0 64px 10px 0; padding: 2px 6px; border-radius: 8px; outline: none; }
+    .name[contenteditable="true"]:focus { box-shadow: 0 0 0 4px rgba(79, 124, 255, 0.25); background: rgba(255,255,255,0.06); }
+
+    .input-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
+
+    input[type="text"], input[type="datetime-local"] { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); outline: none; transition: border-color .15s ease, background .15s ease, box-shadow .15s ease; }
+    input[type="text"]::placeholder { color: #9aa4d3; }
+    input[type="text"]:focus, input[type="datetime-local"]:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(79, 124, 255, 0.25); background: rgba(255,255,255,0.1); }
+
+    button.add-btn { padding: 12px 14px; border: 1px solid rgba(255,255,255,0.12); background: rgba(79, 124, 255, 0.15); color: var(--text); border-radius: 10px; cursor: pointer; font-weight: 600; transition: background .15s ease, transform .05s ease; }
+    button.add-btn:hover { background: rgba(79, 124, 255, 0.25); }
+    button.add-btn:active { transform: translateY(1px); }
+
+    .row2 { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: center; margin-top: 8px; }
+    .row2 label { font-size: 12px; color: var(--muted); }
+
+    .meta { margin-top: 10px; font-size: 12px; color: var(--muted); min-height: 18px; }
+
+    .log { margin-top: 26px; background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%); border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+    .log-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .log-header h3 { margin: 0; font-size: 15px; letter-spacing: 0.3px; }
+    .controls { display: flex; gap: 8px; }
+    .controls button { padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); cursor: pointer; font-size: 12px; }
+    .controls button:hover { background: rgba(255,255,255,0.12); }
+
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    thead th { text-align: left; padding: 10px 14px; color: var(--muted); font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    tbody td { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); vertical-align: middle; }
+    tbody tr:last-child td { border-bottom: none; }
+    .empty-row td { text-align: center; color: var(--muted); padding: 18px; }
+    .date-row td { background: rgba(255,255,255,0.04); color: var(--accent-2); font-weight: 700; letter-spacing: .3px; }
+
+    .row-actions { white-space: nowrap; text-align: right; }
+    .icon-btn { border: none; background: transparent; color: var(--muted); cursor: pointer; font-size: 16px; line-height: 1; padding: 4px 6px; }
+    .icon-btn:hover { color: var(--text); }
+    .icon-danger:hover { color: var(--danger); }
+
+    .edit-input { width: 100%; }
+
+    /* Snackbar / Undo */
+    .snackbar {
+      position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+      background: #151a35; color: var(--text); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px; padding: 10px 14px; box-shadow: var(--shadow);
+      display: none; gap: 12px; align-items: center; z-index: 1000;
+    }
+    .snackbar.show { display: inline-flex; }
+    .snackbar .msg { font-size: 14px; color: var(--muted); }
+    .snackbar .undo { border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.06); color: var(--text); border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+    .snackbar .undo:hover { background: rgba(255,255,255,0.12); }
+
+    @media (max-width: 960px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 680px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Drug Intake Tracker</h1>
+      <p>Type a dosage under a drug and press Enter or click Add.</p>
+    </header>
+
+    <div class="toolbar">
+      <button id="add-med">+ Add Drug</button>
+    </div>
+
+    <section class="grid" id="drug-grid" aria-label="Drug Inputs"></section>
+
+    <section class="log" aria-label="Total Drug Intake">
+      <div class="log-header">
+        <h3>Total Drug Intake</h3>
+        <div class="controls">
+          <button id="clear-log" title="Clear all entries">Clear All</button>
+        </div>
+      </div>
+      <table aria-describedby="A table of recorded drug intakes grouped by date. Columns: Drug, Total, Individual Doses, Time.">
+        <thead>
+          <tr>
+            <th scope="col">Drug</th>
+            <th scope="col">Total</th>
+            <th scope="col">Individual Doses</th>
+            <th scope="col">Time</th>
+            <th scope="col" aria-label="Actions" style="width:72px"></th>
+          </tr>
+        </thead>
+        <tbody id="log-body">
+          <tr class="empty-row"><td colspan="5">No entries yet — add a dosage above to get started.</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <!-- Snackbar for smooth confirmations -->
+  <div id="snackbar" class="snackbar" role="status" aria-live="polite">
+    <span class="msg" id="snackbar-msg">Removed.</span>
+    <button class="undo" id="snackbar-undo">Undo</button>
+  </div>
+
+  <script>
+    // --- Utilities ---
+    const $ = (sel, root=document) => root.querySelector(sel);
+    const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+
+    function nowDateLocalStr() {
+      const d = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function timeStr(d) {
+      try { return new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(d); }
+      catch { return d.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}); }
+    }
+
+    function dateLabel(d) {
+      try { return new Intl.DateTimeFormat(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: '2-digit' }).format(d); }
+      catch { return d.toDateString(); }
+    }
+
+    function dayKey(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const day = String(d.getDate()).padStart(2,'0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function parseDosage(text) {
+      const t = (text||'').trim();
+      const t2 = t.replace(',', '.');
+      const m = t2.match(/^([+-]?\d*\.?\d+)\s*([a-zA-Zµμ%][\wµμ%\/]*)?/);
+      if (!m) return { value: null, unit: null };
+      const value = parseFloat(m[1]);
+      const unit = (m[2] || '').trim();
+      if (!isFinite(value)) return { value: null, unit };
+      return { value, unit };
+    }
+
+    function fmtNumber(n) {
+      if (n == null || !isFinite(n)) return '';
+      return (Math.round(n*1000)/1000).toString();
+    }
+
+    function uid(prefix='id') { return `${prefix}_${Math.random().toString(36).slice(2,9)}_${Date.now().toString(36)}`; }
+
+    function formatAsDatetimeLocal(d) {
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    // --- Unit normalization & pluralization ---
+    function normalizeUnit(unitRaw) {
+      if (!unitRaw) return '';
+      const raw = unitRaw.trim();
+      let token = raw.toLowerCase()
+        .replace(/μ/g, 'µ')
+        .replace(/\./g, '')
+        .replace(/\s+/g, '')
+        .replace(/per/g, '/');
+      const map = {
+        // mass
+        'mg': 'mg', 'milligram': 'mg', 'milligrams': 'mg', 'miligram': 'mg', 'miligrams': 'mg', 'milligramme': 'mg', 'milligrammes': 'mg', 'milligramm': 'mg', 'mgs': 'mg',
+        'g': 'g', 'gram': 'g', 'grams': 'g', 'gramme': 'g', 'grammes': 'g', 'gramm': 'g',
+        'kg': 'kg', 'kilogram': 'kg', 'kilograms': 'kg', 'kilogramme': 'kg', 'kilogrammes': 'kg', 'kilogramm': 'kg',
+        'µg': 'µg', 'ug': 'µg', 'mcg': 'µg', 'microgram': 'µg', 'micrograms': 'µg', 'microgramme': 'µg', 'microgrammes': 'µg', 'mikrogramm': 'µg', 'microgramm': 'µg',
+        // volume
+        'ml': 'mL', 'milliliter': 'mL', 'milliliters': 'mL', 'millilitre': 'mL', 'millilitres': 'mL',
+        'l': 'L', 'liter': 'L', 'liters': 'L', 'litre': 'L', 'litres': 'L',
+        // concentrations
+        'mgdl': 'mg/dL', 'mg/dl': 'mg/dL', 'mgperdl': 'mg/dL', 'mmoll': 'mmol/L', 'mmol/l': 'mmol/L',
+        // international units
+        'iu': 'IU', 'i/u': 'IU', 'i.u': 'IU', 'i.u.': 'IU', 'internationalunit': 'IU', 'internationalunits': 'IU',
+        // tablet family
+        'tablet': 'tablet', 'tablets': 'tablet', 'tablette': 'tablet', 'tabletten': 'tablet', 'pill': 'tablet', 'pills': 'tablet', 'pille': 'tablet', 'pillen': 'tablet', 'teil': 'tablet', 'teile': 'tablet',
+        // other count-based
+        'capsule': 'capsule', 'capsules': 'capsule', 'cap': 'capsule', 'caps': 'capsule', 'kapsel': 'capsule', 'kapseln': 'capsule',
+        'drop': 'drop', 'drops': 'drop', 'gtt': 'drop', 'tropfen': 'drop',
+        'spray': 'spray', 'sprays': 'spray', 'puff': 'spray', 'puffs': 'spray', 'hub': 'spray', 'huebe': 'spray', 'hübe': 'spray',
+        'patch': 'patch', 'patches': 'patch',
+        // spoons
+        'tsp': 'tsp', 'teaspoon': 'tsp', 'teaspoons': 'tsp',
+        'tbsp': 'tbsp', 'tablespoon': 'tbsp', 'tablespoons': 'tbsp',
+        // generic
+        'unit': 'unit', 'units': 'unit', 'einheit': 'unit', 'einheiten': 'unit'
+      };
+      if (map[token]) return map[token];
+      const tries = [ token.replace(/s$/, ''), token.replace(/en$/, ''), token.replace(/e$/, ''), token.replace(/n$/, ''), token.replace(/es$/, '') ];
+      for (const t of tries) { if (map[t]) return map[t]; }
+      return raw;
+    }
+
+    const PLURALS = {
+      tablet: ['tablet', 'tablets'],
+      capsule: ['capsule', 'capsules'],
+      drop: ['drop', 'drops'],
+      spray: ['spray', 'sprays'],
+      patch: ['patch', 'patches'],
+      unit: ['unit', 'units']
+      // mg, g, kg, mL, L, IU remain unchanged in display (no plural s)
+    };
+
+    function displayValueUnit(value, unit) {
+      if (!unit) return fmtNumber(value);
+      const p = PLURALS[unit];
+      if (p) {
+        const u = (value === 1) ? p[0] : p[1];
+        return `${fmtNumber(value)} ${u}`;
+      }
+      return `${fmtNumber(value)} ${unit}`;
+    }
+
+    // --- State ---
+    const initialState = {
+      drugs: [], // start empty; user adds progressively
+      entries: [] // { id, ts, drugId, drugNameAtEntry, dosageText, value, unit }
+    };
+
+    const STORAGE_KEY = 'med_tracker_v2_state'; // keep same key so existing data persists
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return structuredClone(initialState);
+        const parsed = JSON.parse(raw);
+        parsed.entries.forEach(e => e.ts = new Date(e.ts));
+        if (!Array.isArray(parsed.drugs)) parsed.drugs = [];
+        return parsed;
+      } catch {
+        return structuredClone(initialState);
+      }
+    }
+
+    let state = loadState();
+    function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {} }
+
+    // snackbar / undo
+    const snackbar = $('#snackbar');
+    const snackbarMsg = $('#snackbar-msg');
+    const snackbarUndo = $('#snackbar-undo');
+    let undoTimer = null;
+    let undoPayload = null; // {type, data}
+
+    function showUndo(message, onUndo, duration=6000) {
+      if (undoTimer) clearTimeout(undoTimer);
+      snackbarMsg.textContent = message;
+      snackbar.classList.add('show');
+      undoPayload = { onUndo };
+      undoTimer = setTimeout(() => { hideUndo(); }, duration);
+    }
+    function hideUndo() {
+      snackbar.classList.remove('show');
+      undoPayload = null;
+      if (undoTimer) { clearTimeout(undoTimer); undoTimer = null; }
+    }
+    snackbarUndo.addEventListener('click', () => {
+      if (undoPayload && typeof undoPayload.onUndo === 'function') {
+        undoPayload.onUndo();
+      }
+      hideUndo();
+    });
+
+    // rotating placeholders
+    const placeholders = [
+      'e.g., 10 mg', 'e.g., 1 tablet', 'e.g., 5 mL', 'e.g., 2 capsules', 'e.g., 1 spray', 'e.g., 2 drops', 'e.g., 250 µg', 'e.g., 1 pill', 'e.g., 1 patch'
+    ];
+
+    // editing state
+    let editingId = null; // entry currently being edited
+
+    // --- Rendering ---
+    const grid = $('#drug-grid');
+    const logBody = $('#log-body');
+
+    function render() {
+      renderDrugs();
+      renderLog();
+    }
+
+    function renderDrugs() {
+      grid.innerHTML = '';
+      state.drugs.forEach((drug, idx) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.dataset.id = drug.id;
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove';
+        removeBtn.textContent = 'Remove';
+        removeBtn.setAttribute('aria-label', `Remove ${drug.name}`);
+        card.appendChild(removeBtn);
+
+        const nameEl = document.createElement('h2');
+        nameEl.className = 'name';
+        nameEl.contentEditable = 'true';
+        nameEl.spellcheck = false;
+        nameEl.title = 'Click to edit name';
+        nameEl.textContent = drug.name;
+        nameEl.addEventListener('input', () => { drug.name = nameEl.textContent.trim() || drug.name; saveState(); renderLog(); });
+        card.appendChild(nameEl);
+
+        const inputRow = document.createElement('div');
+        inputRow.className = 'input-row';
+
+        const doseInput = document.createElement('input');
+        doseInput.type = 'text';
+        doseInput.placeholder = placeholders[idx % placeholders.length];
+        doseInput.setAttribute('aria-label', `Dosage for ${drug.name}`);
+
+        const addBtn = document.createElement('button');
+        addBtn.className = 'add-btn';
+        addBtn.textContent = 'Add';
+        addBtn.addEventListener('click', () => addEntry(drug.id, drug.name, doseInput, timeInput, useCustom.checked));
+
+        inputRow.appendChild(doseInput);
+        inputRow.appendChild(addBtn);
+
+        // Row 2: custom time
+        const row2 = document.createElement('div');
+        row2.className = 'row2';
+        const useCustom = document.createElement('input');
+        useCustom.type = 'checkbox';
+        useCustom.id = uid('custom');
+        const label = document.createElement('label');
+        label.htmlFor = useCustom.id;
+        label.textContent = 'Use custom time:';
+        const timeInput = document.createElement('input');
+        timeInput.type = 'datetime-local';
+        timeInput.value = nowDateLocalStr();
+        timeInput.style.display = 'none';
+        useCustom.addEventListener('change', () => {
+          timeInput.style.display = useCustom.checked ? 'block' : 'none';
+          if (useCustom.checked && !timeInput.value) timeInput.value = nowDateLocalStr();
+        });
+
+        row2.appendChild(label);
+        row2.appendChild(useCustom);
+        row2.appendChild(timeInput);
+
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        meta.id = `meta-${drug.id}`;
+        meta.textContent = totalsForDrugLabel(drug.id);
+
+        card.appendChild(inputRow);
+        card.appendChild(row2);
+        card.appendChild(meta);
+
+        // Enter key adds
+        doseInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            addEntry(drug.id, drug.name, doseInput, timeInput, useCustom.checked);
+          }
+        });
+
+        grid.appendChild(card);
+      });
+    }
+
+    function renderLog() {
+      const entries = [...state.entries].sort((a,b) => b.ts - a.ts);
+      logBody.innerHTML = '';
+      if (!entries.length) {
+        logBody.innerHTML = '<tr class="empty-row"><td colspan="5">No entries yet — add a dosage above to get started.</td></tr>';
+        return;
+      }
+
+      // Group by date
+      const groups = {};
+      for (const e of entries) {
+        const k = dayKey(e.ts);
+        (groups[k] ||= []).push(e);
+      }
+      const dayKeys = Object.keys(groups).sort((a,b) => (a<b?1:-1));
+
+      for (const dk of dayKeys) {
+        const d = new Date(dk + 'T00:00:00');
+        const trDate = document.createElement('tr');
+        trDate.className = 'date-row';
+        const td = document.createElement('td');
+        td.colSpan = 5;
+        td.textContent = dateLabel(d);
+        trDate.appendChild(td);
+        logBody.appendChild(trDate);
+
+        const dayEntries = groups[dk];
+
+        // Precompute running totals per drug across ALL units (ascending by time)
+        const totalsByEntry = new Map(); // entryId -> display string
+        const sums = new Map(); // drugId -> Map(unit->sum)
+        const asc = [...dayEntries].sort((a,b)=> a.ts - b.ts || (a.id > b.id ? 1 : -1));
+        for (const e of asc) {
+          const unitNorm = normalizeUnit(e.unit);
+          if (!sums.has(e.drugId)) sums.set(e.drugId, new Map());
+          const uMap = sums.get(e.drugId);
+          if (e.value != null && isFinite(e.value)) {
+            uMap.set(unitNorm, (uMap.get(unitNorm) || 0) + e.value);
+          }
+          // Build label across ALL units accumulated so far for this drug
+          const parts = [];
+          for (const [u,sum] of uMap.entries()) {
+            if (!isFinite(sum)) continue;
+            parts.push(displayValueUnit(sum, u));
+          }
+          totalsByEntry.set(e.id, parts.length ? parts.join(' • ') : '—');
+        }
+
+        // Render rows (descending by time)
+        const desc = [...dayEntries].sort((a,b)=> b.ts - a.ts);
+        for (const e of desc) {
+          const tr = document.createElement('tr');
+          tr.dataset.entryId = e.id;
+
+          const tdDrug = document.createElement('td');
+          tdDrug.textContent = lookupDrugName(e.drugId) || e.drugNameAtEntry || 'Drug';
+
+          const tdTotal = document.createElement('td');
+          tdTotal.textContent = totalsByEntry.get(e.id) || '—';
+
+          const tdDose = document.createElement('td');
+          const tdTimeCell = document.createElement('td');
+
+          if (editingId === e.id) {
+            const doseInput = document.createElement('input');
+            doseInput.type = 'text';
+            doseInput.className = 'edit-input';
+            doseInput.id = `edit-dose-${e.id}`;
+            doseInput.value = e.dosageText;
+
+            const timeInput = document.createElement('input');
+            timeInput.type = 'datetime-local';
+            timeInput.id = `edit-time-${e.id}`;
+            timeInput.value = formatAsDatetimeLocal(e.ts);
+
+            tdDose.appendChild(doseInput);
+            tdTimeCell.appendChild(timeInput);
+          } else {
+            tdDose.textContent = e.dosageText;
+            tdTimeCell.textContent = timeStr(e.ts);
+          }
+
+          const tdActions = document.createElement('td');
+          tdActions.className = 'row-actions';
+
+          if (editingId === e.id) {
+            const saveBtn = document.createElement('button');
+            saveBtn.className = 'icon-btn';
+            saveBtn.textContent = '✔';
+            saveBtn.title = 'Save';
+            saveBtn.dataset.action = 'save-edit';
+            saveBtn.dataset.entryId = e.id;
+
+            const cancelBtn = document.createElement('button');
+            cancelBtn.className = 'icon-btn';
+            cancelBtn.textContent = '✕';
+            cancelBtn.title = 'Cancel';
+            cancelBtn.dataset.action = 'cancel-edit';
+            cancelBtn.dataset.entryId = e.id;
+
+            tdActions.appendChild(saveBtn);
+            tdActions.appendChild(cancelBtn);
+          } else {
+            const editBtn = document.createElement('button');
+            editBtn.className = 'icon-btn';
+            editBtn.textContent = '✎';
+            editBtn.title = 'Edit';
+            editBtn.dataset.action = 'edit-entry';
+            editBtn.dataset.entryId = e.id;
+
+            const delBtn = document.createElement('button');
+            delBtn.className = 'icon-btn icon-danger';
+            delBtn.textContent = '×';
+            delBtn.title = 'Remove this entry';
+            delBtn.dataset.action = 'remove-entry';
+            delBtn.dataset.entryId = e.id;
+
+            tdActions.appendChild(editBtn);
+            tdActions.appendChild(delBtn);
+          }
+
+          tr.appendChild(tdDrug);
+          tr.appendChild(tdTotal);
+          tr.appendChild(tdDose);
+          tr.appendChild(tdTimeCell);
+          tr.appendChild(tdActions);
+          logBody.appendChild(tr);
+        }
+      }
+
+      // Update per-card totals (today)
+      state.drugs.forEach(d => {
+        const meta = document.getElementById(`meta-${d.id}`);
+        if (meta) meta.textContent = totalsForDrugLabel(d.id);
+      });
+    }
+
+    function lookupDrugName(id) {
+      return state.drugs.find(d => d.id === id)?.name || null;
+    }
+
+    function totalsForDrugLabel(drugId) {
+      const todayKey = dayKey(new Date());
+      const units = new Map();
+      for (const e of state.entries) {
+        if (e.drugId !== drugId) continue;
+        if (dayKey(e.ts) !== todayKey) continue;
+        if (e.value == null || !isFinite(e.value)) continue;
+        const u = normalizeUnit(e.unit || '');
+        units.set(u, (units.get(u) || 0) + e.value);
+      }
+      if (!units.size) return 'Today total: —';
+      const parts = [];
+      for (const [unit, sum] of units.entries()) {
+        parts.push(displayValueUnit(sum, unit));
+      }
+      return `Today total: ${parts.join(' • ')}`;
+    }
+
+    // --- Actions ---
+    function addEntry(drugId, currentDrugName, inputEl, timeInputEl, useCustomTime) {
+      const dosage = (inputEl.value || '').trim();
+      if (!dosage) {
+        inputEl.focus();
+        inputEl.style.boxShadow = '0 0 0 4px rgba(239, 68, 68, 0.35)';
+        setTimeout(() => (inputEl.style.boxShadow = ''), 300);
+        return;
+      }
+      const { value, unit } = parseDosage(dosage);
+      const unitNorm = normalizeUnit(unit);
+      const ts = useCustomTime && timeInputEl?.value ? new Date(timeInputEl.value) : new Date();
+      if (useCustomTime && timeInputEl && !timeInputEl.value) timeInputEl.value = nowDateLocalStr();
+
+      state.entries.push({ id: uid('e'), ts, drugId, drugNameAtEntry: currentDrugName, dosageText: dosage, value, unit: unitNorm });
+      saveState();
+      inputEl.value = '';
+      render();
+      inputEl.focus();
+    }
+
+    function removeDrug(drugId) {
+      const idx = state.drugs.findIndex(d => d.id === drugId);
+      if (idx < 0) return;
+      const removed = state.drugs.splice(idx, 1)[0];
+      saveState();
+      render();
+      showUndo(`Removed drug "${removed.name}".`, () => {
+        state.drugs.splice(idx, 0, removed);
+        saveState();
+        render();
+      });
+    }
+
+    function removeEntry(entryId) {
+      const idx = state.entries.findIndex(e => e.id === entryId);
+      if (idx < 0) return;
+      const removed = state.entries.splice(idx, 1)[0];
+      saveState();
+      render();
+      showUndo('Removed entry.', () => {
+        state.entries.splice(idx, 0, removed);
+        saveState();
+        render();
+      });
+    }
+
+    function startEdit(entryId) {
+      editingId = entryId;
+      render();
+      const inp = document.getElementById(`edit-dose-${entryId}`);
+      if (inp) inp.focus();
+    }
+
+    function saveEdit(entryId) {
+      const doseEl = document.getElementById(`edit-dose-${entryId}`);
+      const timeEl = document.getElementById(`edit-time-${entryId}`);
+      const e = state.entries.find(x => x.id === entryId);
+      if (!e || !doseEl || !timeEl) return;
+      const dosage = (doseEl.value || '').trim();
+      const { value, unit } = parseDosage(dosage);
+      e.dosageText = dosage;
+      e.value = value;
+      e.unit = normalizeUnit(unit);
+      if (timeEl.value) e.ts = new Date(timeEl.value);
+      editingId = null;
+      saveState();
+      render();
+    }
+
+    function cancelEdit() {
+      editingId = null;
+      render();
+    }
+
+    // --- Event delegation ---
+    document.addEventListener('click', (e) => {
+      // Clear all (no browser popup; smooth undo)
+      if (e.target && e.target.id === 'clear-log') {
+        if (!state.entries.length) return;
+        const snapshot = state.entries.slice();
+        state.entries = [];
+        saveState();
+        render();
+        showUndo('Cleared all entries.', () => {
+          state.entries = snapshot;
+          saveState();
+          render();
+        });
+      }
+
+      // Add drug
+      if (e.target && e.target.id === 'add-med') {
+        state.drugs.push({ id: uid('drug'), name: `Drug ${state.drugs.length + 1}` });
+        saveState();
+        render();
+      }
+
+      // Remove drug card
+      const remBtn = e.target.closest('.card .remove');
+      if (remBtn) {
+        const card = remBtn.closest('.card');
+        if (card) removeDrug(card.dataset.id);
+      }
+
+      // Entry actions
+      const actionBtn = e.target.closest('[data-action]');
+      if (actionBtn) {
+        const action = actionBtn.dataset.action;
+        const id = actionBtn.dataset.entryId;
+        if (action === 'remove-entry') removeEntry(id);
+        if (action === 'edit-entry') startEdit(id);
+        if (action === 'save-edit') saveEdit(id);
+        if (action === 'cancel-edit') cancelEdit();
+      }
+    });
+
+    // Initial render
+    render();
+  </script>
+</body>
+</html>
