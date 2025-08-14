@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Drug Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Drug Intake Tracker</title>
   <meta name="description" content="Track drug dosage and timing easily on any device">
-  <meta property="og:title" content="Drug Tracker">
+  <meta property="og:title" content="Drug Intake Tracker">
   <meta property="og:description" content="Track drug dosage and timing easily on any device">
   <style>
     :root {
@@ -21,6 +21,8 @@
       --danger: #ef4444;
       --radius: 14px;
       --shadow: 0 10px 30px rgba(0,0,0,0.25);
+      --grid-gap: 16px;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
 
     * { box-sizing: border-box; }
@@ -39,34 +41,58 @@
     header h1 { font-size: clamp(22px, 3vw, 32px); margin: 0 0 6px; letter-spacing: 0.3px; }
     header p { margin: 0 0 18px; color: var(--muted); }
 
-    .toolbar { display: flex; gap: 8px; margin-bottom: 16px; }
+    .toolbar { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
     .toolbar button { padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); cursor: pointer; }
     .toolbar button:hover { background: rgba(255,255,255,0.12); }
 
-    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--grid-gap); }
 
-    .card { background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%); border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); position: relative; }
+    .card {
+      background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .color-strip { position: absolute; inset: 0 0 auto 0; height: 4px; border-radius: var(--radius) var(--radius) 0 0; }
 
     .card .remove { position: absolute; right: 10px; top: 10px; padding: 4px 8px; font-size: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); cursor: pointer; }
     .card .remove:hover { background: rgba(255,255,255,0.12); }
 
-    .name { font-size: 16px; font-weight: 800; letter-spacing: .4px; margin: 0 64px 10px 0; padding: 2px 6px; border-radius: 8px; outline: none; }
+    .name { font-size: 16px; font-weight: 800; letter-spacing: .4px; margin: 0 72px 2px 0; padding: 2px 6px; border-radius: 8px; outline: none; }
     .name[contenteditable="true"]:focus { box-shadow: 0 0 0 4px rgba(79, 124, 255, 0.25); background: rgba(255,255,255,0.06); }
+    .name.invalid { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.35) !important; }
+
+    .name-row { display: flex; align-items: center; gap: 8px; }
+    .name-error { color: var(--danger); font-size: 12px; margin: 0 0 6px 0; display: none; }
+
+    /* Color picker (dropdown) */
+    .color-picker { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .color-picker label { font-size: 12px; color: var(--muted); }
 
     .input-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
 
-    input[type="text"], input[type="datetime-local"] { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); outline: none; transition: border-color .15s ease, background .15s ease, box-shadow .15s ease; }
+    input[type="text"], input[type="datetime-local"], input[type="number"], select { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); outline: none; transition: border-color .15s ease, background .15s ease, box-shadow .15s ease; }
     input[type="text"]::placeholder { color: #9aa4d3; }
-    input[type="text"]:focus, input[type="datetime-local"]:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(79, 124, 255, 0.25); background: rgba(255,255,255,0.1); }
+    input[type="text"]:focus, input[type="datetime-local"]:focus, input[type="number"]:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(79, 124, 255, 0.25); background: rgba(255,255,255,0.1); }
+
+    /* Hide number input arrows (spinners) */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type="number"] { -moz-appearance: textfield; }
+
+    .dose-grid { display: grid; grid-template-columns: 1fr 140px auto; gap: 8px; }
 
     button.add-btn { padding: 12px 14px; border: 1px solid rgba(255,255,255,0.12); background: rgba(79, 124, 255, 0.15); color: var(--text); border-radius: 10px; cursor: pointer; font-weight: 600; transition: background .15s ease, transform .05s ease; }
     button.add-btn:hover { background: rgba(79, 124, 255, 0.25); }
     button.add-btn:active { transform: translateY(1px); }
 
-    .row2 { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: center; margin-top: 8px; }
-    .row2 label { font-size: 12px; color: var(--muted); }
-
-    .meta { margin-top: 10px; font-size: 12px; color: var(--muted); min-height: 18px; }
+    .meta { margin-top: 6px; font-size: 12px; color: var(--muted); min-height: 18px; }
 
     .log { margin-top: 26px; background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%); border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
     .log-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); }
@@ -87,28 +113,101 @@
     .icon-btn:hover { color: var(--text); }
     .icon-danger:hover { color: var(--danger); }
 
+    .drug-pill {
+      display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05);
+    }
+    .color-dot { width: 10px; height: 10px; border-radius: 999px; display: inline-block; }
+
     .edit-input { width: 100%; }
 
-    /* Snackbar / Undo */
+    /* Snackbar */
     .snackbar {
-      position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+      position: fixed; left: 50%; bottom: calc(24px + var(--safe-bottom)); transform: translateX(-50%);
       background: #151a35; color: var(--text); border: 1px solid rgba(255,255,255,0.12);
       border-radius: 12px; padding: 10px 14px; box-shadow: var(--shadow);
       display: none; gap: 12px; align-items: center; z-index: 1000;
     }
     .snackbar.show { display: inline-flex; }
     .snackbar .msg { font-size: 14px; color: var(--muted); }
-    .snackbar .undo { border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.06); color: var(--text); border-radius: 8px; padding: 6px 10px; cursor: pointer; }
-    .snackbar .undo:hover { background: rgba(255,255,255,0.12); }
 
+    /* Confirmation Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(6, 10, 30, 0.6);
+      backdrop-filter: blur(2px);
+      z-index: 1100;
+      animation: fadeIn .15s ease forwards;
+    }
+    .modal-overlay.show { display: flex; }
+
+    /* Ensure confirm is above history */
+    #confirm { z-index: 1200; }
+
+    @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: translateY(0) } }
+
+    .modal {
+      width: min(92vw, 520px);
+      max-height: 80vh;
+      overflow: auto;
+      background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+      animation: slideIn .18s ease forwards;
+    }
+    .modal h4 { margin: 0 0 6px; font-size: 16px; letter-spacing: .3px; }
+    .modal p { margin: 0 0 14px; color: var(--muted); }
+    .modal .actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+    .btn { padding: 10px 12px; border-radius: 10px; font-weight: 600; cursor: pointer; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); }
+    .btn:hover { background: rgba(255,255,255,0.12); }
+    .btn-danger { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.35); }
+    .btn-danger:hover { background: rgba(239,68,68,0.25); }
+    .btn-ghost { background: transparent; border-color: rgba(255,255,255,0.15); }
+
+    /* History Floating Button */
+    .history-fab {
+      position: fixed; right: 16px; bottom: calc(16px + var(--safe-bottom));
+      width: 48px; height: 48px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.08); color: var(--text); box-shadow: var(--shadow);
+      display: grid; place-items: center; cursor: pointer; z-index: 1050;
+    }
+    .history-fab:hover { background: rgba(255,255,255,0.14); }
+
+    /* History modal styles */
+    .history-list { display: grid; gap: 10px; }
+    .history-item {
+      display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center;
+      padding: 10px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+    }
+    .history-status { font-size: 12px; padding: 4px 8px; border-radius: 999px; }
+    .status-active { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.35); }
+    .status-removed { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.35); }
+
+    /* Mobile optimizations */
     @media (max-width: 960px) { .grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 680px) { .grid { grid-template-columns: 1fr; } }
+    @media (max-width: 720px) {
+      .container { padding: 16px; margin: 20px auto; }
+      .grid { grid-template-columns: 1fr; gap: 12px; }
+      .dose-grid { grid-template-columns: 1fr 120px auto; }
+      .toolbar button { padding: 12px 14px; }
+      .log-header { padding: 12px; }
+      thead th, tbody td { padding: 10px 12px; }
+      .name { margin-right: 0; }
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>Drug Tracker</h1>
+      <h1>Drug Intake Tracker</h1>
       <p>Track drug dosage and timing easily on any device.</p>
     </header>
 
@@ -142,22 +241,47 @@
     </section>
   </div>
 
-  <!-- Snackbar for smooth confirmations -->
+  <!-- Floating History Button -->
+  <button id="open-history" class="history-fab" title="History (includes removed)">
+    🕒
+  </button>
+
+  <!-- Snackbar -->
   <div id="snackbar" class="snackbar" role="status" aria-live="polite">
     <span class="msg" id="snackbar-msg">Removed.</span>
-    <button class="undo" id="snackbar-undo">Undo</button>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div id="confirm" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-title" style="display:none;">
+    <div class="modal" role="document">
+      <h4 id="confirm-title">Please confirm</h4>
+      <p id="confirm-msg">Are you sure you want to proceed?</p>
+      <div class="actions">
+        <button class="btn btn-ghost" id="confirm-no" autofocus>No</button>
+        <button class="btn btn-danger" id="confirm-yes">Yes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- History Modal -->
+  <div id="history" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="history-title" style="display:none;">
+    <div class="modal" role="document">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+        <h4 id="history-title" style="margin:0;">History</h4>
+        <div class="actions">
+          <button class="btn btn-ghost" id="history-close">Close</button>
+          <button class="btn btn-danger" id="history-clear">Clear History</button>
+        </div>
+      </div>
+      <p>Shows all intakes, including those that were removed.</p>
+      <div id="history-list" class="history-list"></div>
+    </div>
   </div>
 
   <script>
     // --- Utilities ---
     const $ = (sel, root=document) => root.querySelector(sel);
     const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
-
-    function nowDateLocalStr() {
-      const d = new Date();
-      const pad = (n) => String(n).padStart(2, '0');
-      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    }
 
     function timeStr(d) {
       try { return new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(d); }
@@ -199,6 +323,11 @@
       return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
     }
 
+    // Canonical/normalized name key for grouping by drug name (case/space-insensitive)
+    function nameKey(str) {
+      return (str || '').toString().trim().toLowerCase();
+    }
+
     // --- Unit normalization & pluralization ---
     function normalizeUnit(unitRaw) {
       if (!unitRaw) return '';
@@ -217,12 +346,11 @@
         // volume
         'ml': 'mL', 'milliliter': 'mL', 'milliliters': 'mL', 'millilitre': 'mL', 'millilitres': 'mL',
         'l': 'L', 'liter': 'L', 'liters': 'L', 'litre': 'L', 'litres': 'L',
-        // concentrations
-        'mgdl': 'mg/dL', 'mg/dl': 'mg/dL', 'mgperdl': 'mg/dL', 'mmoll': 'mmol/L', 'mmol/l': 'mmol/L',
         // international units
         'iu': 'IU', 'i/u': 'IU', 'i.u': 'IU', 'i.u.': 'IU', 'internationalunit': 'IU', 'internationalunits': 'IU',
-        // tablet family
-        'tablet': 'tablet', 'tablets': 'tablet', 'tablette': 'tablet', 'tabletten': 'tablet', 'pill': 'tablet', 'pills': 'tablet', 'pille': 'tablet', 'pillen': 'tablet', 'teil': 'tablet', 'teile': 'tablet',
+        // pill family (formerly tablet)
+        'tablet': 'pill', 'tablets': 'pill', 'tablette': 'pill', 'tabletten': 'pill', 'pill': 'pill', 'pills': 'pill', 'pille': 'pill', 'pillen': 'pill', 'teil': 'pill', 'teile': 'pill',
+        'tab': 'tab',
         // other count-based
         'capsule': 'capsule', 'capsules': 'capsule', 'cap': 'capsule', 'caps': 'capsule', 'kapsel': 'capsule', 'kapseln': 'capsule',
         'drop': 'drop', 'drops': 'drop', 'gtt': 'drop', 'tropfen': 'drop',
@@ -241,13 +369,14 @@
     }
 
     const PLURALS = {
-      tablet: ['tablet', 'tablets'],
+      pill: ['pill', 'pills'],
+      tab: ['tab', 'tabs'],
       capsule: ['capsule', 'capsules'],
       drop: ['drop', 'drops'],
       spray: ['spray', 'sprays'],
       patch: ['patch', 'patches'],
       unit: ['unit', 'units']
-      // mg, g, kg, mL, L, IU remain unchanged in display (no plural s)
+      // mg, g, kg, mL, L, IU remain unchanged in display
     };
 
     function displayValueUnit(value, unit) {
@@ -260,10 +389,39 @@
       return `${fmtNumber(value)} ${unit}`;
     }
 
+    // Units for dropdown (exact order + set requested)
+    const UNIT_OPTIONS = [
+      { value: 'mg', label: 'mg' },
+      { value: 'g', label: 'g' },
+      { value: 'µg', label: 'µg' },
+      { value: 'pill', label: 'pill' },
+      { value: 'tab', label: 'tab' },
+      { value: 'unit', label: 'unit' },
+      { value: 'ml', label: 'ml' },
+      { value: 'l', label: 'l' },
+      { value: 'drop', label: 'drop' }
+    ];
+
+    // Fixed 10-color palette across spectrum (defined BEFORE loadState)
+    const palette = [
+      '#ef4444', // red
+      '#f59e0b', // orange
+      '#eab308', // yellow
+      '#84cc16', // lime
+      '#22c55e', // green
+      '#10b981', // emerald/teal
+      '#06b6d4', // cyan
+      '#3b82f6', // blue
+      '#8b5cf6', // violet
+      '#ec4899'  // pink
+    ];
+    const paletteNames = ['Red','Orange','Yellow','Lime','Green','Teal','Cyan','Blue','Violet','Pink'];
+
     // --- State ---
     const initialState = {
-      drugs: [], // start empty; user adds progressively
-      entries: [] // { id, ts, drugId, drugNameAtEntry, dosageText, value, unit }
+      drugs: [], // { id, name, color }
+      entries: [], // { id, ts, drugId, drugNameAtEntry, dosageText, value, unit, unitRaw? }
+      history: [] // { id, ts, drugNameAtEntry, dosageText, value, unit, colorAtEntry, addedAt, removed, removedAt }
     };
 
     const STORAGE_KEY = 'med_tracker_v2_state'; // keep same key so existing data persists
@@ -273,8 +431,13 @@
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) return structuredClone(initialState);
         const parsed = JSON.parse(raw);
-        parsed.entries.forEach(e => e.ts = new Date(e.ts));
+        parsed.entries?.forEach(e => e.ts = new Date(e.ts));
+        parsed.history?.forEach(h => { h.ts = new Date(h.ts); if (h.addedAt) h.addedAt = new Date(h.addedAt); if (h.removedAt) h.removedAt = new Date(h.removedAt); });
         if (!Array.isArray(parsed.drugs)) parsed.drugs = [];
+        if (!Array.isArray(parsed.entries)) parsed.entries = [];
+        if (!Array.isArray(parsed.history)) parsed.history = [];
+        // Ensure drug colors exist
+        parsed.drugs.forEach((d, i) => { if (!d.color) d.color = palette[i % palette.length]; });
         return parsed;
       } catch {
         return structuredClone(initialState);
@@ -284,39 +447,121 @@
     let state = loadState();
     function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {} }
 
-    // snackbar / undo
+    // Snackbar / toast
     const snackbar = $('#snackbar');
     const snackbarMsg = $('#snackbar-msg');
-    const snackbarUndo = $('#snackbar-undo');
     let undoTimer = null;
-    let undoPayload = null; // {type, data}
 
-    function showUndo(message, onUndo, duration=6000) {
+    function showToast(message, duration=2500) {
       if (undoTimer) clearTimeout(undoTimer);
       snackbarMsg.textContent = message;
       snackbar.classList.add('show');
-      undoPayload = { onUndo };
-      undoTimer = setTimeout(() => { hideUndo(); }, duration);
+      undoTimer = setTimeout(() => {
+        snackbar.classList.remove('show');
+        undoTimer = null;
+      }, duration);
     }
-    function hideUndo() {
-      snackbar.classList.remove('show');
-      undoPayload = null;
-      if (undoTimer) { clearTimeout(undoTimer); undoTimer = null; }
+
+    // Confirmation modal
+    const confirmOverlay = $('#confirm');
+    const confirmMsg = $('#confirm-msg');
+    const btnYes = $('#confirm-yes');
+    const btnNo = $('#confirm-no');
+    let confirmResolver = null;
+    let lastFocused = null;
+
+    function openConfirm(message) {
+      confirmMsg.textContent = message;
+      lastFocused = document.activeElement;
+      confirmOverlay.style.display = 'flex';
+      confirmOverlay.classList.add('show');
+      btnNo.focus();
+      return new Promise((resolve) => {
+        confirmResolver = resolve;
+      });
     }
-    snackbarUndo.addEventListener('click', () => {
-      if (undoPayload && typeof undoPayload.onUndo === 'function') {
-        undoPayload.onUndo();
+    function closeConfirm(result=false) {
+      confirmOverlay.classList.remove('show');
+      confirmOverlay.style.display = 'none';
+      if (typeof confirmResolver === 'function') {
+        const r = confirmResolver;
+        confirmResolver = null;
+        r(result);
       }
-      hideUndo();
+      if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+    }
+    btnYes.addEventListener('click', () => closeConfirm(true));
+    btnNo.addEventListener('click', () => closeConfirm(false));
+    confirmOverlay.addEventListener('click', (e) => {
+      if (e.target === confirmOverlay) closeConfirm(false);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (confirmOverlay.classList.contains('show')) {
+        if (e.key === 'Escape') { e.preventDefault(); closeConfirm(false); }
+        if (e.key === 'Enter') { e.preventDefault(); closeConfirm(true); }
+      }
     });
 
-    // rotating placeholders
-    const placeholders = [
-      'e.g., 10 mg', 'e.g., 1 tablet', 'e.g., 5 mL', 'e.g., 2 capsules', 'e.g., 1 spray', 'e.g., 2 drops', 'e.g., 250 µg', 'e.g., 1 pill', 'e.g., 1 patch'
-    ];
+    // History modal
+    const historyOverlay = $('#history');
+    const historyListEl = $('#history-list');
+    $('#open-history').addEventListener('click', () => openHistory());
+    $('#history-close').addEventListener('click', () => closeHistory());
+    $('#history-clear').addEventListener('click', async () => {
+      const ok = await openConfirm('Are you sure you want to clear the entire history? This cannot be undone.');
+      if (ok) {
+        state.history = [];
+        saveState();
+        renderHistory();
+        closeHistory();
+        showToast('History cleared.');
+      }
+    });
+    function openHistory() {
+      renderHistory();
+      historyOverlay.style.display = 'flex';
+      historyOverlay.classList.add('show');
+      $('#history-close').focus();
+    }
+    function closeHistory() {
+      historyOverlay.classList.remove('show');
+      historyOverlay.style.display = 'none';
+    }
+    historyOverlay.addEventListener('click', (e) => {
+      if (e.target === historyOverlay) closeHistory();
+    });
 
-    // editing state
-    let editingId = null; // entry currently being edited
+    function renderHistory() {
+      const h = [...state.history].sort((a,b) => b.ts - a.ts);
+      if (!h.length) { historyListEl.innerHTML = '<div class="empty-row" style="text-align:center;color:var(--muted);padding:12px;">No history yet.</div>'; return; }
+      historyListEl.innerHTML = '';
+      for (const item of h) {
+        const row = document.createElement('div');
+        row.className = 'history-item';
+        const pillBadge = document.createElement('div');
+        pillBadge.className = 'drug-pill';
+        const dot2 = document.createElement('span');
+        dot2.className = 'color-dot';
+        dot2.style.background = item.colorAtEntry || '#8ea8ff';
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = item.drugNameAtEntry || 'Drug';
+        pillBadge.appendChild(dot2);
+        pillBadge.appendChild(nameSpan);
+
+        const info = document.createElement('div');
+        info.innerHTML = `<div style="font-weight:600;">${item.dosageText || '—'}</div>
+                          <div style="font-size:12px;color:var(--muted)">${dateLabel(item.ts)} • ${timeStr(item.ts)}</div>`;
+
+        const status = document.createElement('div');
+        status.className = 'history-status ' + (item.removed ? 'status-removed' : 'status-active');
+        status.textContent = item.removed ? 'Removed' : 'Active';
+
+        row.appendChild(pillBadge);
+        row.appendChild(info);
+        row.appendChild(status);
+        historyListEl.appendChild(row);
+      }
+    }
 
     // --- Rendering ---
     const grid = $('#drug-grid');
@@ -334,6 +579,11 @@
         card.className = 'card';
         card.dataset.id = drug.id;
 
+        const strip = document.createElement('div');
+        strip.className = 'color-strip';
+        strip.style.background = drug.color || palette[idx % palette.length];
+        card.appendChild(strip);
+
         const removeBtn = document.createElement('button');
         removeBtn.className = 'remove';
         removeBtn.textContent = 'Remove';
@@ -346,61 +596,122 @@
         nameEl.spellcheck = false;
         nameEl.title = 'Click to edit name';
         nameEl.textContent = drug.name;
-        nameEl.addEventListener('input', () => { drug.name = nameEl.textContent.trim() || drug.name; saveState(); renderLog(); });
-        card.appendChild(nameEl);
+        nameEl.dataset.prev = drug.name;
 
-        const inputRow = document.createElement('div');
-        inputRow.className = 'input-row';
+        const nameErr = document.createElement('div');
+        nameErr.className = 'name-error';
+        nameErr.textContent = 'This name is already in use.';
 
-        const doseInput = document.createElement('input');
-        doseInput.type = 'text';
-        doseInput.placeholder = placeholders[idx % placeholders.length];
-        doseInput.setAttribute('aria-label', `Dosage for ${drug.name}`);
+        // Name editing with duplicate prevention
+        nameEl.addEventListener('focus', () => { nameEl.dataset.prev = drug.name; });
+        nameEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); nameEl.blur(); } });
+        nameEl.addEventListener('input', () => {
+          const proposed = nameEl.textContent.trim();
+          const dup = state.drugs.some(d => d.id !== drug.id && nameKey(d.name) === nameKey(proposed));
+          if (dup) { nameEl.classList.add('invalid'); nameErr.style.display = 'block'; }
+          else { nameEl.classList.remove('invalid'); nameErr.style.display = 'none'; }
+        });
+        nameEl.addEventListener('blur', () => {
+          const proposed = nameEl.textContent.trim();
+          const prev = nameEl.dataset.prev || drug.name;
+          const isEmpty = proposed.length === 0;
+          const dup = state.drugs.some(d => d.id !== drug.id && nameKey(d.name) === nameKey(proposed));
+          if (isEmpty || dup) {
+            nameEl.textContent = prev;
+            nameEl.classList.remove('invalid');
+            nameErr.style.display = dup ? 'block' : 'none';
+            setTimeout(() => { nameErr.style.display = 'none'; }, 2000);
+            return;
+          }
+          drug.name = proposed;
+          saveState();
+          render(); // update log and totals
+        });
+
+        // Color dropdown (preset choices only) — show colored text, no hex code
+        const colorWrap = document.createElement('div');
+        colorWrap.className = 'color-picker';
+        const colorLabel = document.createElement('label');
+        colorLabel.textContent = 'Color:';
+        const colorSelect = document.createElement('select');
+        const current = drug.color || palette[idx % palette.length];
+        palette.forEach((hex, i) => {
+          const opt = document.createElement('option');
+          opt.value = hex;
+          opt.textContent = `● ${paletteNames[i]}`; // dot + name
+          opt.style.color = hex; // colorize the option text (and dot)
+          if (hex === current) opt.selected = true;
+          colorSelect.appendChild(opt);
+        });
+        // also tint the closed select to the chosen color
+        colorSelect.style.color = current;
+        colorSelect.addEventListener('change', () => {
+          drug.color = colorSelect.value;
+          colorSelect.style.color = colorSelect.value;
+          saveState();
+          render();
+        });
+        colorWrap.appendChild(colorLabel);
+        colorWrap.appendChild(colorSelect);
+
+        const nameRow = document.createElement('div');
+        nameRow.className = 'name-row';
+        nameRow.appendChild(nameEl);
+
+        // Dose UI: numeric + unit dropdown + Add button
+        const doseRow = document.createElement('div');
+        doseRow.className = 'dose-grid';
+
+        const numInput = document.createElement('input');
+        numInput.type = 'number';
+        numInput.step = 'any';
+        numInput.placeholder = 'Amount';
+        numInput.setAttribute('inputmode', 'decimal');
+        numInput.setAttribute('aria-label', `Amount for ${drug.name}`);
+
+        const unitSelect = document.createElement('select');
+        unitSelect.setAttribute('aria-label', `Unit for ${drug.name}`);
+        for (const u of UNIT_OPTIONS) {
+          const opt = document.createElement('option');
+          opt.value = u.value;
+          opt.textContent = u.label;
+          unitSelect.appendChild(opt);
+        }
+        unitSelect.value = 'mg';
 
         const addBtn = document.createElement('button');
         addBtn.className = 'add-btn';
         addBtn.textContent = 'Add';
-        addBtn.addEventListener('click', () => addEntry(drug.id, drug.name, doseInput, timeInput, useCustom.checked));
-
-        inputRow.appendChild(doseInput);
-        inputRow.appendChild(addBtn);
-
-        // Row 2: custom time
-        const row2 = document.createElement('div');
-        row2.className = 'row2';
-        const useCustom = document.createElement('input');
-        useCustom.type = 'checkbox';
-        useCustom.id = uid('custom');
-        const label = document.createElement('label');
-        label.htmlFor = useCustom.id;
-        label.textContent = 'Use custom time:';
-        const timeInput = document.createElement('input');
-        timeInput.type = 'datetime-local';
-        timeInput.value = nowDateLocalStr();
-        timeInput.style.display = 'none';
-        useCustom.addEventListener('change', () => {
-          timeInput.style.display = useCustom.checked ? 'block' : 'none';
-          if (useCustom.checked && !timeInput.value) timeInput.value = nowDateLocalStr();
+        addBtn.addEventListener('click', () => {
+          addEntryStandard(drug.id, drug.name, numInput, unitSelect, drug.color);
         });
 
-        row2.appendChild(label);
-        row2.appendChild(useCustom);
-        row2.appendChild(timeInput);
+        doseRow.appendChild(numInput);
+        doseRow.appendChild(unitSelect);
+        doseRow.appendChild(addBtn);
 
+        // Per-card meta (totals today)
         const meta = document.createElement('div');
         meta.className = 'meta';
         meta.id = `meta-${drug.id}`;
         meta.textContent = totalsForDrugLabel(drug.id);
 
-        card.appendChild(inputRow);
-        card.appendChild(row2);
+        // Compose card
+        card.appendChild(nameRow);
+        card.appendChild(colorWrap);
+        card.appendChild(doseRow);
         card.appendChild(meta);
 
-        // Enter key adds
-        doseInput.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            addEntry(drug.id, drug.name, doseInput, timeInput, useCustom.checked);
+        // Enter key adds from amount input
+        numInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addBtn.click(); } });
+
+        // Remove button
+        removeBtn.addEventListener('click', async () => {
+          const labelText = drug?.name ? `the category "${drug.name}"` : 'this category';
+          const ok = await openConfirm(`Are you sure you want to remove ${labelText}?`);
+          if (ok) {
+            removeDrug(drug.id);
+            showToast('Category removed.');
           }
         });
 
@@ -436,18 +747,19 @@
 
         const dayEntries = groups[dk];
 
-        // Precompute running totals per drug across ALL units (ascending by time)
+        // Precompute running totals per *name* across ALL units (ascending by time)
         const totalsByEntry = new Map(); // entryId -> display string
-        const sums = new Map(); // drugId -> Map(unit->sum)
+        const sumsByName = new Map(); // nameKey -> Map(unit->sum)
         const asc = [...dayEntries].sort((a,b)=> a.ts - b.ts || (a.id > b.id ? 1 : -1));
         for (const e of asc) {
+          const currentName = lookupDrugName(e.drugId) || e.drugNameAtEntry || 'Drug';
+          const nKey = nameKey(currentName);
           const unitNorm = normalizeUnit(e.unit);
-          if (!sums.has(e.drugId)) sums.set(e.drugId, new Map());
-          const uMap = sums.get(e.drugId);
+          if (!sumsByName.has(nKey)) sumsByName.set(nKey, new Map());
+          const uMap = sumsByName.get(nKey);
           if (e.value != null && isFinite(e.value)) {
             uMap.set(unitNorm, (uMap.get(unitNorm) || 0) + e.value);
           }
-          // Build label across ALL units accumulated so far for this drug
           const parts = [];
           for (const [u,sum] of uMap.entries()) {
             if (!isFinite(sum)) continue;
@@ -463,7 +775,16 @@
           tr.dataset.entryId = e.id;
 
           const tdDrug = document.createElement('td');
-          tdDrug.textContent = lookupDrugName(e.drugId) || e.drugNameAtEntry || 'Drug';
+          const pill = document.createElement('span');
+          pill.className = 'drug-pill';
+          const dot = document.createElement('span');
+          dot.className = 'color-dot';
+          dot.style.background = colorForEntry(e) || '#8ea8ff';
+          const nameSpan = document.createElement('span');
+          nameSpan.textContent = lookupDrugName(e.drugId) || e.drugNameAtEntry || 'Drug';
+          pill.appendChild(dot);
+          pill.appendChild(nameSpan);
+          tdDrug.appendChild(pill);
 
           const tdTotal = document.createElement('td');
           tdTotal.textContent = totalsByEntry.get(e.id) || '—';
@@ -482,6 +803,11 @@
             timeInput.type = 'datetime-local';
             timeInput.id = `edit-time-${e.id}`;
             timeInput.value = formatAsDatetimeLocal(e.ts);
+
+            // Save on Enter in either field
+            const enterSave = (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); saveEdit(e.id); } };
+            doseInput.addEventListener('keydown', enterSave);
+            timeInput.addEventListener('keydown', enterSave);
 
             tdDose.appendChild(doseInput);
             tdTimeCell.appendChild(timeInput);
@@ -548,13 +874,36 @@
     function lookupDrugName(id) {
       return state.drugs.find(d => d.id === id)?.name || null;
     }
+    function lookupDrugColor(id) {
+      return state.drugs.find(d => d.id === id)?.color || null;
+    }
+    function colorForEntry(e) {
+      // prefer live color by id; fallback to history color by name
+      return lookupDrugColor(e.drugId) || colorForName(lookupDrugName(e.drugId) || e.drugNameAtEntry);
+    }
+    function colorForName(name) {
+      if (!name) return null;
+      const live = state.drugs.find(d => nameKey(d.name) === nameKey(name));
+      if (live) return live.color;
+      // fallback: last history record with this name
+      for (let i = state.history.length - 1; i >= 0; i--) {
+        const h = state.history[i];
+        if (nameKey(h.drugNameAtEntry) === nameKey(name)) return h.colorAtEntry;
+      }
+      return null;
+    }
 
+    // Today totals for a card should aggregate by *name*, not id
     function totalsForDrugLabel(drugId) {
-      const todayKey = dayKey(new Date());
+      const todayKeyStr = dayKey(new Date());
+      const drug = state.drugs.find(d => d.id === drugId);
+      if (!drug) return 'Today total: —';
+      const nKey = nameKey(drug.name);
       const units = new Map();
       for (const e of state.entries) {
-        if (e.drugId !== drugId) continue;
-        if (dayKey(e.ts) !== todayKey) continue;
+        if (dayKey(e.ts) !== todayKeyStr) continue;
+        const entryNameKey = nameKey(e.drugNameAtEntry || lookupDrugName(e.drugId));
+        if (entryNameKey !== nKey) continue;
         if (e.value == null || !isFinite(e.value)) continue;
         const u = normalizeUnit(e.unit || '');
         units.set(u, (units.get(u) || 0) + e.value);
@@ -567,51 +916,48 @@
       return `Today total: ${parts.join(' • ')}`;
     }
 
-    // --- Actions ---
-    function addEntry(drugId, currentDrugName, inputEl, timeInputEl, useCustomTime) {
-      const dosage = (inputEl.value || '').trim();
-      if (!dosage) {
-        inputEl.focus();
-        inputEl.style.boxShadow = '0 0 0 4px rgba(239, 68, 68, 0.35)';
-        setTimeout(() => (inputEl.style.boxShadow = ''), 300);
+    // --- Add entries (standard only) ---
+    function addEntryStandard(drugId, currentDrugName, numInput, unitSelect, colorAtEntry) {
+      const raw = numInput.value;
+      const value = parseFloat(raw);
+      if (!raw || !isFinite(value)) {
+        numInput.focus();
+        numInput.style.boxShadow = '0 0 0 4px rgba(239, 68, 68, 0.35)';
+        setTimeout(() => (numInput.style.boxShadow = ''), 300);
         return;
       }
-      const { value, unit } = parseDosage(dosage);
-      const unitNorm = normalizeUnit(unit);
-      const ts = useCustomTime && timeInputEl?.value ? new Date(timeInputEl.value) : new Date();
-      if (useCustomTime && timeInputEl && !timeInputEl.value) timeInputEl.value = nowDateLocalStr();
-
-      state.entries.push({ id: uid('e'), ts, drugId, drugNameAtEntry: currentDrugName, dosageText: dosage, value, unit: unitNorm });
+      const unitRaw = unitSelect.value;
+      const unitNorm = normalizeUnit(unitRaw);
+      const ts = new Date(); // time can be edited later in the table
+      const dosageText = displayValueUnit(value, unitRaw);
+      const entry = { id: uid('e'), ts, drugId, drugNameAtEntry: currentDrugName, dosageText, value, unit: unitNorm, unitRaw };
+      state.entries.push(entry);
+      // History
+      state.history.push({ id: entry.id, ts: entry.ts, drugNameAtEntry: entry.drugNameAtEntry, dosageText, value, unit: unitNorm, colorAtEntry, addedAt: new Date(), removed: false, removedAt: null });
       saveState();
-      inputEl.value = '';
+      numInput.value = '';
       render();
-      inputEl.focus();
+      numInput.focus();
     }
 
+    // Remove
     function removeDrug(drugId) {
       const idx = state.drugs.findIndex(d => d.id === drugId);
       if (idx < 0) return;
-      const removed = state.drugs.splice(idx, 1)[0];
+      state.drugs.splice(idx, 1);
       saveState();
       render();
-      showUndo(`Removed drug "${removed.name}".`, () => {
-        state.drugs.splice(idx, 0, removed);
-        saveState();
-        render();
-      });
     }
 
     function removeEntry(entryId) {
       const idx = state.entries.findIndex(e => e.id === entryId);
       if (idx < 0) return;
-      const removed = state.entries.splice(idx, 1)[0];
+      state.entries.splice(idx, 1);
+      // mark history
+      const h = state.history.find(x => x.id === entryId);
+      if (h) { h.removed = true; h.removedAt = new Date(); }
       saveState();
       render();
-      showUndo('Removed entry.', () => {
-        state.entries.splice(idx, 0, removed);
-        saveState();
-        render();
-      });
     }
 
     function startEdit(entryId) {
@@ -642,34 +988,41 @@
       render();
     }
 
+    // editing state
+    let editingId = null; // entry currently being edited
+
     // --- Event delegation ---
-    document.addEventListener('click', (e) => {
-      // Clear all (no browser popup; smooth undo)
+    document.addEventListener('click', async (e) => {
+      // Clear all entries (with confirmation)
       if (e.target && e.target.id === 'clear-log') {
         if (!state.entries.length) return;
-        const snapshot = state.entries.slice();
-        state.entries = [];
-        saveState();
-        render();
-        showUndo('Cleared all entries.', () => {
-          state.entries = snapshot;
+        const ok = await openConfirm('Are you sure you want to clear all entries?');
+        if (ok) {
+          // mark history as removed
+          const ids = state.entries.map(x => x.id);
+          for (const id of ids) {
+            const h = state.history.find(x => x.id === id);
+            if (h && !h.removed) { h.removed = true; h.removedAt = new Date(); }
+          }
+          state.entries = [];
           saveState();
           render();
-        });
+          showToast('All entries cleared.');
+        }
       }
 
       // Add drug
       if (e.target && e.target.id === 'add-med') {
-        state.drugs.push({ id: uid('drug'), name: `Drug ${state.drugs.length + 1}` });
+        // Ensure a unique default name
+        let i = state.drugs.length + 1;
+        let base = 'Drug ';
+        let candidate = base + i;
+        const names = new Set(state.drugs.map(d => nameKey(d.name)));
+        while (names.has(nameKey(candidate))) { i++; candidate = base + i; }
+        const color = palette[state.drugs.length % palette.length];
+        state.drugs.push({ id: uid('drug'), name: candidate, color });
         saveState();
         render();
-      }
-
-      // Remove drug card
-      const remBtn = e.target.closest('.card .remove');
-      if (remBtn) {
-        const card = remBtn.closest('.card');
-        if (card) removeDrug(card.dataset.id);
       }
 
       // Entry actions
@@ -677,7 +1030,13 @@
       if (actionBtn) {
         const action = actionBtn.dataset.action;
         const id = actionBtn.dataset.entryId;
-        if (action === 'remove-entry') removeEntry(id);
+        if (action === 'remove-entry') {
+          const ok = await openConfirm('Are you sure you want to remove this entry?');
+          if (ok) {
+            removeEntry(id);
+            showToast('Entry removed.');
+          }
+        }
         if (action === 'edit-entry') startEdit(id);
         if (action === 'save-edit') saveEdit(id);
         if (action === 'cancel-edit') cancelEdit();
