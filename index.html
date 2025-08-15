@@ -216,34 +216,6 @@
       .log-header { padding: 12px; }
       thead th, tbody td { padding: 10px 12px; }
       .name { margin-right: 0; }
-      table { table-layout: fixed; }
-
-      thead th:nth-child(1), /* header */
-      tbody td:nth-child(1)  /* body cells */
-      {
-        width: 24%;          /* or any %/px you prefer */
-        white-space: nowrap; /* prevent wrapping */
-        overflow: hidden;    /* hide overflow */
-        text-overflow: ellipsis; /* add "…" if clipped */
-      }
-    
-      /* Stop wrapping in headers */
-      thead th {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-    
-      /* Let body cells wrap normally */
-      tbody td { overflow-wrap: anywhere; }
-    
-      /* Keep Time column text on one line */
-      thead th:nth-child(4),
-      tbody td:nth-child(4) { white-space: nowrap; }
-    
-      /* Keep Actions on one line */
-      thead th:nth-child(5),
-      tbody td:nth-child(5) { white-space: nowrap; }
     }
 
     /* Make the delete “×” always visible on very small screens */
