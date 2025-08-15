@@ -105,14 +105,14 @@
 
     .meta { margin-top: 6px; font-size: 12px; color: var(--muted); min-height: 18px; }
 
-    .log { margin-top: 26px; background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%); border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; /* keep borders tidy */ overflow-x: auto; }
+    .log { margin-top: 26px; background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%); border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
     .log-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); }
     .log-header h3 { margin: 0; font-size: 15px; letter-spacing: 0.3px; }
     .controls { display: flex; gap: 8px; }
     .controls button { padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); cursor: pointer; font-size: 12px; }
     .controls button:hover { background: rgba(255,255,255,0.12); }
 
-    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; table-layout: auto; }
     thead th { text-align: left; padding: 10px 14px; color: var(--muted); font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.06); white-space: nowrap; }
     tbody td { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); vertical-align: middle; }
     tbody tr:last-child td { border-bottom: none; }
@@ -133,8 +133,9 @@
     .drug-pill .color-dot { width: 10px; height: 10px; border-radius: 999px; display: inline-block; }
     .drug-pill .name-text { white-space: normal; overflow-wrap: anywhere; }
 
-    /* NEW compact color chip for the log's Drug column */
-    .drug-chip { display: inline-block; padding: 4px 10px; border-radius: 999px; font-weight: 700; max-width: 100%; overflow-wrap: anywhere; }
+    /* NEW subtle color chip for the log's Drug column */
+    .drug-chip { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 999px; font-weight: 600; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 1px solid rgba(255,255,255,0.12); }
+    .drug-chip .dot { width: 10px; height: 10px; border-radius: 999px; flex: 0 0 10px; background: var(--dot, #8ea8ff); box-shadow: 0 0 0 1px rgba(0,0,0,0.15) inset; }
 
     .edit-input { width: 100%; }
 
@@ -184,24 +185,26 @@
       .dose-grid { grid-template-columns: 1fr 120px auto; }
       .toolbar button { padding: 12px 14px; }
       .log-header { padding: 12px; }
-      thead th, tbody td { padding: 10px 12px; }
+      thead th, tbody td { padding: 8px 10px; }
       .name { margin-right: 0; }
-      table { table-layout: auto; }
+      .log { overflow-x: hidden; }
+      table { table-layout: fixed; width: 100%; }
       thead th { white-space: nowrap; }
-      tbody td:nth-child(4), thead th:nth-child(4) { white-space: nowrap; } /* Time */
-      tbody td:nth-child(1) { min-width: 120px; } /* Drug */
+      tbody td { white-space: normal; word-break: break-word; }
+      tbody td:nth-child(1) { white-space: nowrap; min-width: 80px; }
+      tbody td:nth-child(4), thead th:nth-child(4) { white-space: nowrap; }
+      thead th:nth-child(5) { width: 56px; }
     }
 
-    /* Make the delete “×” always visible on very small screens */
+    /* Make the delete/actions area compact on very small screens without horizontal scroll */
     @media (max-width: 480px) {
-      .log { overflow: visible; overflow-x: auto; }
-      table { table-layout: auto; }
-      thead th:nth-child(4) { width: 64px; } /* Time column width */
-      thead th:nth-child(5) { width: 56px; } /* Actions */
+      .log { overflow-x: hidden; }
+      table { table-layout: fixed; }
+      thead th:nth-child(4) { width: 64px; }
+      thead th:nth-child(5) { width: 56px; }
       .row-actions { position: sticky; right: 0; background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%); }
-      thead th { white-space: nowrap; }
-      tbody td:nth-child(4) { white-space: nowrap; } /* Time cells never wrap */
-      tbody td:nth-child(1) { min-width: 120px; } /* ensure short drug names fit */
+      tbody td:nth-child(4) { white-space: nowrap; }
+      tbody td:nth-child(1) { white-space: nowrap; min-width: 80px; }
     }
   </style>
 </head>
@@ -334,6 +337,14 @@
       const toLin = (c) => { const s = c/255; return s <= 0.04045 ? s/12.92 : Math.pow((s+0.055)/1.055, 2.4); };
       const L = 0.2126*toLin(r) + 0.7152*toLin(g) + 0.0722*toLin(b);
       return L > 0.5 ? '#000' : '#fff';
+    }
+
+    function hexToRgba(hex, a = 1) {
+      const v = (hex || '').replace('#','');
+      const r = parseInt(v.substring(0,2),16) || 0;
+      const g = parseInt(v.substring(2,4),16) || 0;
+      const b = parseInt(v.substring(4,6),16) || 0;
+      return `rgba(${r},${g},${b},${a})`;
     }
 
     // --- Unit normalization & pluralization (slim) ---
@@ -660,7 +671,7 @@
         return;
       }
 
-      // running totals across all days
+      // running totals across ALL days
       const totalsByEntryGlobal = new Map();
       const sumsByNameGlobal = new Map();
       const ascAll = [...state.entries].sort((a,b)=> a.ts - b.ts || (a.id > b.id ? 1 : -1));
@@ -694,14 +705,19 @@
           const tr = document.createElement('tr');
           tr.dataset.entryId = e.id;
 
-          // Drug cell with compact color chip background
+          // Drug cell with subtle color chip background + dot
           const tdDrug = document.createElement('td');
           const chip = document.createElement('span');
           chip.className = 'drug-chip';
           const bg = colorForEntry(e) || '#8ea8ff';
-          chip.style.background = bg;
-          chip.style.color = getContrastColor(bg);
-          chip.textContent = lookupDrugName(e.drugId) || e.drugNameAtEntry || 'Drug';
+          const tint = hexToRgba(bg, 0.18);
+          const border = hexToRgba(bg, 0.35);
+          chip.style.background = tint;
+          chip.style.borderColor = border;
+          // chip text color stays default for consistency with dark theme
+          const nameSpan = document.createElement('span');
+          nameSpan.textContent = lookupDrugName(e.drugId) || e.drugNameAtEntry || 'Drug';
+          chip.appendChild(nameSpan);
           tdDrug.appendChild(chip);
 
           const tdTotal = document.createElement('td');
@@ -711,11 +727,22 @@
           const tdTimeCell = document.createElement('td');
 
           if (editingId === e.id) {
-            const doseInput = document.createElement('input');
-            doseInput.type = 'text';
-            doseInput.className = 'edit-input';
-            doseInput.id = `edit-dose-${e.id}`;
-            doseInput.value = e.dosageText;
+            // amount (number) + unit (dropdown), just like add UI
+            const amountInput = document.createElement('input');
+            amountInput.type = 'number';
+            amountInput.step = 'any';
+            amountInput.min = '0';
+            amountInput.className = 'edit-input';
+            amountInput.id = `edit-num-${e.id}`;
+            amountInput.value = (e.value != null && isFinite(e.value)) ? e.value : '';
+            amountInput.setAttribute('inputmode', 'decimal');
+            amountInput.setAttribute('aria-label', 'Amount');
+
+            const unitSelect = document.createElement('select');
+            unitSelect.id = `edit-unit-${e.id}`;
+            unitSelect.setAttribute('aria-label', 'Unit');
+            for (const u of UNIT_OPTIONS) { const opt = document.createElement('option'); opt.value = u.value; opt.textContent = u.label; unitSelect.appendChild(opt); }
+            unitSelect.value = e.unitRaw || e.unit || 'mg';
 
             const timeInput = document.createElement('input');
             timeInput.type = 'datetime-local';
@@ -723,10 +750,18 @@
             timeInput.value = formatAsDatetimeLocal(e.ts);
 
             const enterSave = (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); saveEdit(e.id); } };
-            doseInput.addEventListener('keydown', enterSave);
+            amountInput.addEventListener('keydown', enterSave);
+            unitSelect.addEventListener('keydown', enterSave);
             timeInput.addEventListener('keydown', enterSave);
 
-            tdDose.appendChild(doseInput);
+            // Put number + unit into the Doses cell
+            const amtWrap = document.createElement('div');
+            amtWrap.style.display = 'grid';
+            amtWrap.style.gridTemplateColumns = '1fr 120px';
+            amtWrap.style.gap = '8px';
+            amtWrap.appendChild(amountInput);
+            amtWrap.appendChild(unitSelect);
+            tdDose.appendChild(amtWrap);
             tdTimeCell.appendChild(timeInput);
           } else {
             tdDose.textContent = e.dosageText;
@@ -781,7 +816,7 @@
         }
       }
 
-      // Update per-card totals (today)
+      // Update per-card totals (ALL TIME)
       state.drugs.forEach(d => { const meta = document.getElementById(`meta-${d.id}`); if (meta) meta.textContent = totalsForDrugLabel(d.id); });
     }
 
@@ -799,35 +834,33 @@
     }
 
     function totalsForDrugLabel(drugId) {
-      const todayKeyStr = dayKey(new Date());
       const drug = state.drugs.find(d => d.id === drugId);
-      if (!drug) return 'Today total: —';
+      if (!drug) return 'Total: —';
       const nKey = nameKey(drug.name);
       const units = new Map();
       for (const e of state.entries) {
-        if (dayKey(e.ts) !== todayKeyStr) continue;
         const entryNameKey = nameKey(e.drugNameAtEntry || lookupDrugName(e.drugId));
         if (entryNameKey !== nKey) continue;
         if (e.value == null || !isFinite(e.value)) continue;
         const u = normalizeUnit(e.unit || '');
         units.set(u, (units.get(u) || 0) + e.value);
       }
-      if (!units.size) return 'Today total: —';
+      if (!units.size) return 'Total: —';
       const parts = []; for (const [unit, sum] of units.entries()) { parts.push(displayValueUnit(sum, unit)); }
-      return `Today total: ${parts.join(' • ')}`;
+      return `Total: ${parts.join(' • ')}`;
     }
 
     // --- Add entries (standard only) ---
     function addEntryStandard(drugId, currentDrugName, numInput, unitSelect, colorAtEntry) {
       const raw = numInput.value;
       const value = parseFloat(raw);
-      if (!raw || !isFinite(value)) {
+      if (!raw || !isFinite(value) || value <= 0) {
+        showToast('Enter a positive amount.');
         numInput.focus();
         numInput.style.boxShadow = '0 0 0 4px rgba(239, 68, 68, 0.35)';
         setTimeout(() => (numInput.style.boxShadow = ''), 300);
         return;
       }
-      if (value < 0) { showToast('Amount cannot be negative.'); numInput.focus(); numInput.style.boxShadow = '0 0 0 4px rgba(239, 68, 68, 0.35)'; setTimeout(() => (numInput.style.boxShadow = ''), 300); return; }
 
       const unitRaw = unitSelect.value;
       const unitNorm = normalizeUnit(unitRaw);
@@ -860,20 +893,36 @@
       render();
     }
 
-    function startEdit(entryId) { editingId = entryId; render(); const inp = document.getElementById(`edit-dose-${entryId}`); if (inp) inp.focus(); }
+    function startEdit(entryId) { editingId = entryId; render(); const inp = document.getElementById(`edit-num-${entryId}`); if (inp) inp.focus(); }
 
     function saveEdit(entryId) {
-      const doseEl = document.getElementById(`edit-dose-${entryId}`);
+      const amountEl = document.getElementById(`edit-num-${entryId}`);
+      const unitEl = document.getElementById(`edit-unit-${entryId}`);
       const timeEl = document.getElementById(`edit-time-${entryId}`);
       const e = state.entries.find(x => x.id === entryId);
-      if (!e || !doseEl || !timeEl) return;
-      const dosage = (doseEl.value || '').trim();
-      const { value, unit } = parseDosage(dosage);
-      if (value != null && isFinite(value) && value < 0) { showToast('Amount cannot be negative.'); doseEl.focus(); doseEl.style.boxShadow = '0 0 0 4px rgba(239, 68, 68, 0.35)'; setTimeout(() => (doseEl.style.boxShadow = ''), 400); return; }
-      e.dosageText = dosage;
+      if (!e || !amountEl || !unitEl || !timeEl) return;
+
+      const amountRaw = amountEl.value;
+      const value = parseFloat(amountRaw);
+      if (!amountRaw || !isFinite(value) || value <= 0) {
+        showToast('Enter a positive amount.');
+        amountEl.focus();
+        amountEl.style.boxShadow = '0 0 0 4px rgba(239, 68, 68, 0.35)';
+        setTimeout(() => (amountEl.style.boxShadow = ''), 400);
+        return;
+      }
+      const unitRaw = unitEl.value;
+
       e.value = value;
-      e.unit = normalizeUnit(unit);
+      e.unit = normalizeUnit(unitRaw);
+      e.unitRaw = unitRaw;
+      e.dosageText = displayValueUnit(value, unitRaw);
       if (timeEl.value) e.ts = new Date(timeEl.value);
+
+      // update last unit on the live drug as well
+      const d = state.drugs.find(d => d.id === e.drugId);
+      if (d) d.lastUnit = unitRaw;
+
       editingId = null;
       saveState();
       render();
