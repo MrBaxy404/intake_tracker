@@ -589,7 +589,13 @@
           opt.dataset.value = hex;
           opt.innerHTML = `<span class="swatch" style="--swatch:${hex}"></span><span class="label">${paletteNames[i]}</span>`;
           if (hex === current) opt.setAttribute('aria-selected', 'true');
-          opt.addEventListener('click', () => {
+          let picked = false; // guard against double-fire (pointerup + click)
+          function onPick(ev) {
+            if (picked) return;
+            picked = true;
+            ev?.stopPropagation?.();   // don't let the tap bubble and close before we handle it
+            ev?.preventDefault?.();    // avoid stray default behaviors
+          
             drug.color = hex;
             colorBtn.style.setProperty('--swatch', hex);
             colorBtn.querySelector('.label').textContent = paletteNames[i];
@@ -597,7 +603,10 @@
             render();
             colorWrap.classList.remove('open');
             colorBtn.setAttribute('aria-expanded', 'false');
-          });
+          }
+          
+          opt.addEventListener('pointerup', onPick); // fires immediately on touch release
+          opt.addEventListener('click', onPick);     // desktop & fallback
           menu.appendChild(opt);
         });
 
