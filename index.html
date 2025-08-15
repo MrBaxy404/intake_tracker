@@ -27,6 +27,10 @@
 
     * { box-sizing: border-box; }
     html, body { height: 100%; }
+    /* Prevent iOS auto-zoom on inputs */
+    html { -webkit-text-size-adjust: 100%; }
+    input, select, textarea, .edit-input { font-size: 16px; }
+
     body {
       margin: 0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
@@ -71,9 +75,18 @@
     .name-row { display: flex; align-items: center; gap: 8px; }
     .name-error { color: var(--danger); font-size: 12px; margin: 0 0 6px 0; display: none; }
 
-    /* Color picker (dropdown) */
-    .color-picker { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    /* Color picker (custom dropdown) */
+    .color-picker { position: relative; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .color-picker label { font-size: 12px; color: var(--muted); }
+    .color-select-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); cursor: pointer; }
+    .color-select-btn:hover { background: rgba(255,255,255,0.12); }
+    .color-select-btn .swatch { width: 14px; height: 14px; border-radius: 999px; background: var(--swatch, #8ea8ff); box-shadow: 0 0 0 1px rgba(255,255,255,0.2) inset; }
+    .color-menu { position: absolute; top: calc(100% + 6px); left: 0; min-width: 220px; background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 8px; box-shadow: var(--shadow); display: none; z-index: 200; }
+    .color-picker.open .color-menu { display: grid; grid-template-columns: 1fr; gap: 6px; }
+    .color-option { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.04); cursor: pointer; }
+    .color-option:hover { background: rgba(255,255,255,0.10); }
+    .color-option .swatch { width: 14px; height: 14px; border-radius: 999px; background: var(--swatch); box-shadow: 0 0 0 1px rgba(255,255,255,0.2) inset; }
+    .color-option .label { font-size: 14px; }
 
     .input-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
 
@@ -175,9 +188,9 @@
     /* History Floating Button */
     .history-fab {
       position: fixed; right: 16px; bottom: calc(16px + var(--safe-bottom));
-      width: 48px; height: 48px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.12);
+      min-width: 48px; height: 48px; padding: 0 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.12);
       background: rgba(255,255,255,0.08); color: var(--text); box-shadow: var(--shadow);
-      display: grid; place-items: center; cursor: pointer; z-index: 1050;
+      display: inline-flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1050; font-weight: 700;
     }
     .history-fab:hover { background: rgba(255,255,255,0.14); }
 
@@ -201,6 +214,18 @@
       .log-header { padding: 12px; }
       thead th, tbody td { padding: 10px 12px; }
       .name { margin-right: 0; }
+    }
+
+    /* Make the delete “×” always visible on very small screens */
+    @media (max-width: 480px) {
+      .log { overflow: visible; }
+      table { table-layout: fixed; }
+      /* Hide the verbose column to free space */
+      thead th:nth-child(3), tbody td:nth-child(3) { display: none; }
+      /* Narrow time/actions */
+      thead th:nth-child(4) { width: 72px; }
+      thead th:nth-child(5) { width: 56px; }
+      .row-actions { position: sticky; right: 0; background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%); }
     }
   </style>
 </head>
@@ -242,8 +267,8 @@
   </div>
 
   <!-- Floating History Button -->
-  <button id="open-history" class="history-fab" title="History (includes removed)">
-    🕒
+  <button id="open-history" class="history-fab" title="View history (includes removed)">
+    View History
   </button>
 
   <!-- Snackbar -->
@@ -328,55 +353,26 @@
       return (str || '').toString().trim().toLowerCase();
     }
 
-    // --- Unit normalization & pluralization ---
+    // --- Unit normalization & pluralization (slim) ---
     function normalizeUnit(unitRaw) {
       if (!unitRaw) return '';
       const raw = unitRaw.trim();
-      let token = raw.toLowerCase()
-        .replace(/μ/g, 'µ')
-        .replace(/\./g, '')
-        .replace(/\s+/g, '')
-        .replace(/per/g, '/');
-      const map = {
-        // mass
-        'mg': 'mg', 'milligram': 'mg', 'milligrams': 'mg', 'miligram': 'mg', 'miligrams': 'mg', 'milligramme': 'mg', 'milligrammes': 'mg', 'milligramm': 'mg', 'mgs': 'mg',
-        'g': 'g', 'gram': 'g', 'grams': 'g', 'gramme': 'g', 'grammes': 'g', 'gramm': 'g',
-        'kg': 'kg', 'kilogram': 'kg', 'kilograms': 'kg', 'kilogramme': 'kg', 'kilogrammes': 'kg', 'kilogramm': 'kg',
-        'µg': 'µg', 'ug': 'µg', 'mcg': 'µg', 'microgram': 'µg', 'micrograms': 'µg', 'microgramme': 'µg', 'microgrammes': 'µg', 'mikrogramm': 'µg', 'microgramm': 'µg',
-        // volume
-        'ml': 'mL', 'milliliter': 'mL', 'milliliters': 'mL', 'millilitre': 'mL', 'millilitres': 'mL',
-        'l': 'L', 'liter': 'L', 'liters': 'L', 'litre': 'L', 'litres': 'L',
-        // international units
-        'iu': 'IU', 'i/u': 'IU', 'i.u': 'IU', 'i.u.': 'IU', 'internationalunit': 'IU', 'internationalunits': 'IU',
-        // pill family (formerly tablet)
-        'tablet': 'pill', 'tablets': 'pill', 'tablette': 'pill', 'tabletten': 'pill', 'pill': 'pill', 'pills': 'pill', 'pille': 'pill', 'pillen': 'pill', 'teil': 'pill', 'teile': 'pill',
-        'tab': 'tab',
-        // other count-based
-        'capsule': 'capsule', 'capsules': 'capsule', 'cap': 'capsule', 'caps': 'capsule', 'kapsel': 'capsule', 'kapseln': 'capsule',
-        'drop': 'drop', 'drops': 'drop', 'gtt': 'drop', 'tropfen': 'drop',
-        'spray': 'spray', 'sprays': 'spray', 'puff': 'spray', 'puffs': 'spray', 'hub': 'spray', 'huebe': 'spray', 'hübe': 'spray',
-        'patch': 'patch', 'patches': 'patch',
-        // spoons
-        'tsp': 'tsp', 'teaspoon': 'tsp', 'teaspoons': 'tsp',
-        'tbsp': 'tbsp', 'tablespoon': 'tbsp', 'tablespoons': 'tbsp',
-        // generic
-        'unit': 'unit', 'units': 'unit', 'einheit': 'unit', 'einheiten': 'unit'
-      };
-      if (map[token]) return map[token];
-      const tries = [ token.replace(/s$/, ''), token.replace(/en$/, ''), token.replace(/e$/, ''), token.replace(/n$/, ''), token.replace(/es$/, '') ];
-      for (const t of tries) { if (map[t]) return map[t]; }
-      return raw;
+      const token = raw.toLowerCase();
+    
+      if (token === 'ml') return 'mL';
+      if (token === 'l') return 'L';
+      if (token === 'ug' || token === 'mcg' || token === 'µg') return 'µg';
+      // dropdown already supplies canonical tokens for the rest:
+      // 'mg','g','pill','tab','unit','drop'
+      return raw.toLowerCase(); // 'mg','g','pill','tab','unit','drop'
     }
-
+    
+    // Only keep PLURALS you actually use in the dropdown
     const PLURALS = {
       pill: ['pill', 'pills'],
       tab: ['tab', 'tabs'],
-      capsule: ['capsule', 'capsules'],
       drop: ['drop', 'drops'],
-      spray: ['spray', 'sprays'],
-      patch: ['patch', 'patches'],
       unit: ['unit', 'units']
-      // mg, g, kg, mL, L, IU remain unchanged in display
     };
 
     function displayValueUnit(value, unit) {
@@ -628,31 +624,53 @@
           render(); // update log and totals
         });
 
-        // Color dropdown (preset choices only) — show colored text, no hex code
+        // Color picker: custom accessible dropdown
         const colorWrap = document.createElement('div');
         colorWrap.className = 'color-picker';
         const colorLabel = document.createElement('label');
         colorLabel.textContent = 'Color:';
-        const colorSelect = document.createElement('select');
+
+        const colorBtn = document.createElement('button');
+        colorBtn.type = 'button';
+        colorBtn.className = 'color-select-btn';
         const current = drug.color || palette[idx % palette.length];
+        colorBtn.style.setProperty('--swatch', current);
+        colorBtn.innerHTML = `<span class="swatch"></span><span class="label">${paletteNames[palette.indexOf(current)] || 'Color'}</span>`;
+        colorBtn.setAttribute('aria-haspopup', 'listbox');
+        colorBtn.setAttribute('aria-expanded', 'false');
+
+        const menu = document.createElement('div');
+        menu.className = 'color-menu';
+        menu.setAttribute('role', 'listbox');
+
         palette.forEach((hex, i) => {
-          const opt = document.createElement('option');
-          opt.value = hex;
-          opt.textContent = `● ${paletteNames[i]}`; // dot + name
-          opt.style.color = hex; // colorize the option text (and dot)
-          if (hex === current) opt.selected = true;
-          colorSelect.appendChild(opt);
+          const opt = document.createElement('div');
+          opt.className = 'color-option';
+          opt.setAttribute('role', 'option');
+          opt.dataset.value = hex;
+          opt.innerHTML = `<span class="swatch" style="--swatch:${hex}"></span><span class="label">${paletteNames[i]}</span>`;
+          if (hex === current) opt.setAttribute('aria-selected', 'true');
+          opt.addEventListener('click', () => {
+            drug.color = hex;
+            colorBtn.style.setProperty('--swatch', hex);
+            colorBtn.querySelector('.label').textContent = paletteNames[i];
+            saveState();
+            render();
+            colorWrap.classList.remove('open');
+            colorBtn.setAttribute('aria-expanded', 'false');
+          });
+          menu.appendChild(opt);
         });
-        // also tint the closed select to the chosen color
-        colorSelect.style.color = current;
-        colorSelect.addEventListener('change', () => {
-          drug.color = colorSelect.value;
-          colorSelect.style.color = colorSelect.value;
-          saveState();
-          render();
+
+        colorBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isOpen = colorWrap.classList.toggle('open');
+          colorBtn.setAttribute('aria-expanded', String(isOpen));
         });
+
         colorWrap.appendChild(colorLabel);
-        colorWrap.appendChild(colorSelect);
+        colorWrap.appendChild(colorBtn);
+        colorWrap.appendChild(menu);
 
         const nameRow = document.createElement('div');
         nameRow.className = 'name-row';
@@ -718,6 +736,11 @@
         grid.appendChild(card);
       });
     }
+
+    // Close any open color menus when clicking outside
+    document.addEventListener('click', () => {
+      $$('.color-picker.open').forEach(el => el.classList.remove('open'));
+    });
 
     function renderLog() {
       const entries = [...state.entries].sort((a,b) => b.ts - a.ts);
