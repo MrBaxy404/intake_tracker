@@ -44,6 +44,9 @@
     header h1 { font-size: clamp(22px, 3vw, 32px); margin: 0 0 6px; letter-spacing: 0.3px; }
     header p { margin: 0 0 18px; color: var(--muted); }
 
+    .inline-link { background: none; border: none; color: var(--accent-2); cursor: pointer; text-decoration: underline; padding: 0 0 0 8px; font-weight: 700; }
+    .inline-link:hover { text-decoration: none; }
+
     .toolbar { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
     .toolbar button { padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); cursor: pointer; }
     .toolbar button:hover { background: rgba(255,255,255,0.12); }
@@ -196,8 +199,11 @@
       table { table-layout: fixed; width: 100%; }
       thead th { white-space: nowrap; }
       tbody td { white-space: normal; word-break: break-word; }
-      tbody td:nth-child(1) { white-space: normal; min-width: 80px; }
-      tbody td:nth-child(4), thead th:nth-child(4) { white-space: nowrap; }
+      /* Give the Drug column a little more space on mobile */
+      thead th:nth-child(1), tbody td:nth-child(1) { width: 44%; }
+      /* Keep Time tight and never wrapped */
+      thead th:nth-child(4), tbody td:nth-child(4) { white-space: nowrap; width: 1%; }
+      /* Compact actions column */
       thead th:nth-child(5) { width: 56px; }
     }
 
@@ -205,11 +211,9 @@
     @media (max-width: 480px) {
       .log { overflow-x: hidden; }
       table { table-layout: fixed; }
-      thead th:nth-child(4) { width: 64px; }
+      thead th:nth-child(4), tbody td:nth-child(4) { width: 1%; white-space: nowrap; }
       thead th:nth-child(5) { width: 56px; }
       .row-actions { position: sticky; right: 0; background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%); }
-      tbody td:nth-child(4) { white-space: nowrap; }
-      tbody td:nth-child(1) { white-space: normal; min-width: 80px; }
     }
   </style>
 </head>
@@ -217,7 +221,7 @@
   <div class="container">
     <header>
       <h1>Drug Tracker</h1>
-      <p>Track drug dosage and timing easily on any device.</p>
+      <p>Track drug dosage and timing easily on any device. <button id="privacy-open" class="inline-link" aria-haspopup="dialog" aria-controls="privacy">Privacy Information</button></p>
     </header>
 
     <div class="toolbar">
@@ -284,6 +288,24 @@
       </div>
       <p>Shows all intakes, including those that were removed.</p>
       <div id="history-list" class="history-list"></div>
+    </div>
+  </div>
+
+  <!-- Privacy Modal -->
+  <div id="privacy" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="privacy-title" style="display:none;">
+    <div class="modal" role="document">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+        <h4 id="privacy-title" style="margin:0;">Privacy Information</h4>
+        <div class="actions">
+          <button class="btn btn-ghost" id="privacy-close">Close</button>
+        </div>
+      </div>
+      <div class="privacy-content">
+        <p><em>Your data stays on your device.</em></p>
+        <p>Everything you enter is saved only in your browser’s local storage.</p>
+        <p>We do not send, upload, or store your entries anywhere else — not on a server, not in the cloud.</p>
+        <p>To remove your data, use “Clear All” or “Clear History,” or clear your browser’s storage for this site.</p>
+      </div>
     </div>
   </div>
 
@@ -978,6 +1000,21 @@
         if (action === 'edit-entry') startEdit(id);
         if (action === 'save-edit') saveEdit(id);
         if (action === 'cancel-edit') cancelEdit();
+      }
+    });
+
+    // Privacy modal controls
+    const privacyOverlay = $('#privacy');
+    const privacyOpen = $('#privacy-open');
+    const privacyClose = $('#privacy-close');
+    privacyOpen.addEventListener('click', () => { privacyOverlay.style.display='flex'; privacyOverlay.classList.add('show'); privacyClose.focus(); });
+    privacyClose.addEventListener('click', () => { privacyOverlay.classList.remove('show'); privacyOverlay.style.display='none'; });
+    privacyOverlay.addEventListener('click', (e) => { if (e.target === privacyOverlay) { privacyOverlay.classList.remove('show'); privacyOverlay.style.display='none'; } });
+    document.addEventListener('keydown', (e) => {
+      if (privacyOverlay.classList.contains('show') && e.key === 'Escape') {
+        e.preventDefault();
+        privacyOverlay.classList.remove('show');
+        privacyOverlay.style.display='none';
       }
     });
 
