@@ -865,19 +865,18 @@
     }
 
     function totalsForDrugLabel(drugId) {
-      const drug = state.drugs.find(d => d.id === drugId);
-      if (!drug) return 'Total: —';
-      const nKey = nameKey(drug.name);
       const units = new Map();
       for (const e of state.entries) {
-        const entryNameKey = nameKey(e.drugNameAtEntry || lookupDrugName(e.drugId));
-        if (entryNameKey !== nKey) continue;
+        if (e.drugId !== drugId) continue;            // ← key fix: compare IDs
         if (e.value == null || !isFinite(e.value)) continue;
         const u = normalizeUnit(e.unit || '');
         units.set(u, (units.get(u) || 0) + e.value);
       }
       if (!units.size) return 'Total: —';
-      const parts = []; for (const [unit, sum] of units.entries()) { parts.push(displayValueUnit(sum, unit)); }
+      const parts = [];
+      for (const [unit, sum] of units.entries()) {
+        parts.push(displayValueUnit(sum, unit));
+      }
       return `Total: ${parts.join(' • ')}`;
     }
 
