@@ -242,27 +242,7 @@
       /* Slightly tighter padding on small screens */
       thead th, tbody td { padding: 8px 10px; }
     }
-
-    <!--
-    @media (max-width: 480px) {
-      /* Allow horizontal scrolling instead of shrinking columns */
-      .log {
-        overflow-x: auto;                 /* <- enable horizontal scroll */
-        -webkit-overflow-scrolling: touch;/* smooth scroll on iOS */
-      }
-      table {
-        table-layout: fixed;
-        width: 100%;
-        min-width: 560px;                 /* safeguard: keep columns roomy; adjust if needed */
-      }
     
-      /* Keep Actions clearly visible (same width as in ≤720px block) */
-      thead th:nth-child(5), tbody td:nth-child(5) { width: 56px; }
-    
-      /* Optional: remove sticky so it doesn't overlap while scrolling horizontally */
-      .row-actions { position: static; background: none; }
-  }
-  -->
   </style>
 </head>
 <body>
