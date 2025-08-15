@@ -27,7 +27,6 @@
 
     * { box-sizing: border-box; }
     html, body { height: 100%; }
-    /* Prevent iOS auto-zoom on inputs */
     html { -webkit-text-size-adjust: 100%; }
     input, select, textarea, .edit-input { font-size: 16px; }
 
@@ -94,7 +93,6 @@
     input[type="text"]::placeholder { color: #9aa4d3; }
     input[type="text"]:focus, input[type="datetime-local"]:focus, input[type="number"]:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(79, 124, 255, 0.25); background: rgba(255,255,255,0.1); }
 
-    /* Hide number input arrows (spinners) */
     input[type="number"]::-webkit-outer-spin-button,
     input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     input[type="number"] { -moz-appearance: textfield; }
@@ -107,7 +105,7 @@
 
     .meta { margin-top: 6px; font-size: 12px; color: var(--muted); min-height: 18px; }
 
-    .log { margin-top: 26px; background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%); border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+    .log { margin-top: 26px; background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%); border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; /* keep borders tidy */ overflow-x: auto; }
     .log-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); }
     .log-header h3 { margin: 0; font-size: 15px; letter-spacing: 0.3px; }
     .controls { display: flex; gap: 8px; }
@@ -115,7 +113,7 @@
     .controls button:hover { background: rgba(255,255,255,0.12); }
 
     table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    thead th { text-align: left; padding: 10px 14px; color: var(--muted); font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    thead th { text-align: left; padding: 10px 14px; color: var(--muted); font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.06); white-space: nowrap; }
     tbody td { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); vertical-align: middle; }
     tbody tr:last-child td { border-bottom: none; }
     .empty-row td { text-align: center; color: var(--muted); padding: 18px; }
@@ -126,6 +124,7 @@
     .icon-btn:hover { color: var(--text); }
     .icon-danger:hover { color: var(--danger); }
 
+    /* OLD pill (kept for History view) */
     .drug-pill {
       display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 999px;
       border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05);
@@ -134,49 +133,28 @@
     .drug-pill .color-dot { width: 10px; height: 10px; border-radius: 999px; display: inline-block; }
     .drug-pill .name-text { white-space: normal; overflow-wrap: anywhere; }
 
+    /* NEW compact color chip for the log's Drug column */
+    .drug-chip { display: inline-block; padding: 4px 10px; border-radius: 999px; font-weight: 700; max-width: 100%; overflow-wrap: anywhere; }
+
     .edit-input { width: 100%; }
 
     /* Snackbar */
-    .snackbar {
-      position: fixed; left: 50%; bottom: calc(24px + var(--safe-bottom)); transform: translateX(-50%);
+    .snackbar { position: fixed; left: 50%; bottom: calc(24px + var(--safe-bottom)); transform: translateX(-50%);
       background: #151a35; color: var(--text); border: 1px solid rgba(255,255,255,0.12);
       border-radius: 12px; padding: 10px 14px; box-shadow: var(--shadow);
-      display: none; gap: 12px; align-items: center; z-index: 1000;
-    }
+      display: none; gap: 12px; align-items: center; z-index: 1000; }
     .snackbar.show { display: inline-flex; }
     .snackbar .msg { font-size: 14px; color: var(--muted); }
 
     /* Confirmation Modal */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      background: rgba(6, 10, 30, 0.6);
-      backdrop-filter: blur(2px);
-      z-index: 1100;
-      animation: fadeIn .15s ease forwards;
-    }
+    .modal-overlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(6, 10, 30, 0.6); backdrop-filter: blur(2px); z-index: 1100; animation: fadeIn .15s ease forwards; }
     .modal-overlay.show { display: flex; }
-
-    /* Ensure confirm is above history */
     #confirm { z-index: 1200; }
 
     @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
     @keyframes slideIn { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: translateY(0) } }
 
-    .modal {
-      width: min(92vw, 520px);
-      max-height: 80vh;
-      overflow: auto;
-      background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%);
-      border: 1px solid rgba(255,255,255,0.10);
-      border-radius: 16px;
-      box-shadow: var(--shadow);
-      padding: 18px;
-      animation: slideIn .18s ease forwards;
-    }
+    .modal { width: min(92vw, 520px); max-height: 80vh; overflow: auto; background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%); border: 1px solid rgba(255,255,255,0.10); border-radius: 16px; box-shadow: var(--shadow); padding: 18px; animation: slideIn .18s ease forwards; }
     .modal h4 { margin: 0 0 6px; font-size: 16px; letter-spacing: .3px; }
     .modal p { margin: 0 0 14px; color: var(--muted); }
     .modal .actions { display: flex; gap: 8px; justify-content: flex-end; }
@@ -188,20 +166,12 @@
     .btn-ghost { background: transparent; border-color: rgba(255,255,255,0.15); }
 
     /* History Floating Button */
-    .history-fab {
-      position: fixed; right: 16px; bottom: calc(16px + var(--safe-bottom));
-      min-width: 48px; height: 48px; padding: 0 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.08); color: var(--text); box-shadow: var(--shadow);
-      display: inline-flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1050; font-weight: 700;
-    }
+    .history-fab { position: fixed; right: 16px; bottom: calc(16px + var(--safe-bottom)); min-width: 48px; height: 48px; padding: 0 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.08); color: var(--text); box-shadow: var(--shadow); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1050; font-weight: 700; }
     .history-fab:hover { background: rgba(255,255,255,0.14); }
 
     /* History modal styles */
     .history-list { display: grid; gap: 10px; }
-    .history-item {
-      display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center;
-      padding: 10px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
-    }
+    .history-item { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 10px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); }
     .history-status { font-size: 12px; padding: 4px 8px; border-radius: 999px; }
     .status-active { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.35); }
     .status-removed { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.35); }
@@ -216,15 +186,22 @@
       .log-header { padding: 12px; }
       thead th, tbody td { padding: 10px 12px; }
       .name { margin-right: 0; }
+      table { table-layout: auto; }
+      thead th { white-space: nowrap; }
+      tbody td:nth-child(4), thead th:nth-child(4) { white-space: nowrap; } /* Time */
+      tbody td:nth-child(1) { min-width: 120px; } /* Drug */
     }
 
     /* Make the delete “×” always visible on very small screens */
     @media (max-width: 480px) {
-      .log { overflow: visible; }
-      table { table-layout: fixed; }
-      thead th:nth-child(4) { width: 64px; }
-      thead th:nth-child(5) { width: 56px; }
+      .log { overflow: visible; overflow-x: auto; }
+      table { table-layout: auto; }
+      thead th:nth-child(4) { width: 64px; } /* Time column width */
+      thead th:nth-child(5) { width: 56px; } /* Actions */
       .row-actions { position: sticky; right: 0; background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%); }
+      thead th { white-space: nowrap; }
+      tbody td:nth-child(4) { white-space: nowrap; } /* Time cells never wrap */
+      tbody td:nth-child(1) { min-width: 120px; } /* ensure short drug names fit */
     }
   </style>
 </head>
@@ -348,8 +325,15 @@
     }
 
     // Canonical/normalized name key for grouping by drug name (case/space-insensitive)
-    function nameKey(str) {
-      return (str || '').toString().trim().toLowerCase();
+    function nameKey(str) { return (str || '').toString().trim().toLowerCase(); }
+
+    // Determine readable text color (black/white) against a given hex background
+    function getContrastColor(hex) {
+      const v = (hex || '').replace('#','');
+      const r = parseInt(v.substring(0,2),16), g = parseInt(v.substring(2,4),16), b = parseInt(v.substring(4,6),16);
+      const toLin = (c) => { const s = c/255; return s <= 0.04045 ? s/12.92 : Math.pow((s+0.055)/1.055, 2.4); };
+      const L = 0.2126*toLin(r) + 0.7152*toLin(g) + 0.0722*toLin(b);
+      return L > 0.5 ? '#000' : '#fff';
     }
 
     // --- Unit normalization & pluralization (slim) ---
@@ -357,36 +341,23 @@
       if (!unitRaw) return '';
       const raw = unitRaw.trim();
       const token = raw.toLowerCase();
-    
       if (token === 'ml') return 'mL';
       if (token === 'l') return 'L';
       if (token === 'ug' || token === 'mcg' || token === 'µg') return 'µg';
-      // dropdown already supplies canonical tokens for the rest:
-      // 'mg','g','pill','tab','line','unit','drop'
-      return raw.toLowerCase(); // canonical: 'mg','g','pill','tab','line','unit','drop'
+      return raw.toLowerCase(); // canonical
     }
-    
-    // Only keep PLURALS you actually use in the dropdown
-    const PLURALS = {
-      pill: ['pill', 'pills'],
-      tab: ['tab', 'tabs'],
-      line: ['line', 'lines'],
-      drop: ['drop', 'drops'],
-      unit: ['unit', 'units']
-    };
+
+    const PLURALS = { pill: ['pill', 'pills'], tab: ['tab', 'tabs'], line: ['line', 'lines'], drop: ['drop', 'drops'], unit: ['unit', 'units'] };
 
     function displayValueUnit(value, unit) {
       if (!unit) return fmtNumber(value);
       const uCanon = normalizeUnit(unit);
       const p = PLURALS[uCanon];
-      if (p) {
-        const u = (value === 1) ? p[0] : p[1];
-        return `${fmtNumber(value)} ${u}`;
-      }
+      if (p) { const u = (value === 1) ? p[0] : p[1]; return `${fmtNumber(value)} ${u}`; }
       return `${fmtNumber(value)} ${uCanon}`;
     }
 
-    // Units for dropdown (exact order + set requested)
+    // Units for dropdown (order requested)
     const UNIT_OPTIONS = [
       { value: 'mg', label: 'mg' },
       { value: 'g', label: 'g' },
@@ -401,28 +372,12 @@
     ];
 
     // Fixed 10-color palette across spectrum (defined BEFORE loadState)
-    const palette = [
-      '#ef4444', // red
-      '#f59e0b', // orange
-      '#eab308', // yellow
-      '#84cc16', // lime
-      '#22c55e', // green
-      '#10b981', // emerald/teal
-      '#06b6d4', // cyan
-      '#3b82f6', // blue
-      '#8b5cf6', // violet
-      '#ec4899'  // pink
-    ];
+    const palette = ['#ef4444','#f59e0b','#eab308','#84cc16','#22c55e','#10b981','#06b6d4','#3b82f6','#8b5cf6','#ec4899'];
     const paletteNames = ['Red','Orange','Yellow','Lime','Green','Teal','Cyan','Blue','Violet','Pink'];
 
     // --- State ---
-    const initialState = {
-      drugs: [], // { id, name, color }
-      entries: [], // { id, ts, drugId, drugNameAtEntry, dosageText, value, unit, unitRaw? }
-      history: [] // { id, ts, drugNameAtEntry, dosageText, value, unit, colorAtEntry, addedAt, removed, removedAt }
-    };
-
-    const STORAGE_KEY = 'med_tracker_v2_state'; // keep same key so existing data persists
+    const initialState = { drugs: [], entries: [], history: [] };
+    const STORAGE_KEY = 'med_tracker_v2_state';
 
     function loadState() {
       try {
@@ -434,12 +389,9 @@
         if (!Array.isArray(parsed.drugs)) parsed.drugs = [];
         if (!Array.isArray(parsed.entries)) parsed.entries = [];
         if (!Array.isArray(parsed.history)) parsed.history = [];
-        // Ensure drug colors exist
         parsed.drugs.forEach((d, i) => { if (!d.color) d.color = palette[i % palette.length]; });
         return parsed;
-      } catch {
-        return structuredClone(initialState);
-      }
+      } catch { return structuredClone(initialState); }
     }
 
     let state = loadState();
@@ -449,15 +401,11 @@
     const snackbar = $('#snackbar');
     const snackbarMsg = $('#snackbar-msg');
     let undoTimer = null;
-
     function showToast(message, duration=2500) {
       if (undoTimer) clearTimeout(undoTimer);
       snackbarMsg.textContent = message;
       snackbar.classList.add('show');
-      undoTimer = setTimeout(() => {
-        snackbar.classList.remove('show');
-        undoTimer = null;
-      }, duration);
+      undoTimer = setTimeout(() => { snackbar.classList.remove('show'); undoTimer = null; }, duration);
     }
 
     // Confirmation modal
@@ -474,25 +422,17 @@
       confirmOverlay.style.display = 'flex';
       confirmOverlay.classList.add('show');
       btnNo.focus();
-      return new Promise((resolve) => {
-        confirmResolver = resolve;
-      });
+      return new Promise((resolve) => { confirmResolver = resolve; });
     }
     function closeConfirm(result=false) {
       confirmOverlay.classList.remove('show');
       confirmOverlay.style.display = 'none';
-      if (typeof confirmResolver === 'function') {
-        const r = confirmResolver;
-        confirmResolver = null;
-        r(result);
-      }
+      if (typeof confirmResolver === 'function') { const r = confirmResolver; confirmResolver = null; r(result); }
       if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
     }
     btnYes.addEventListener('click', () => closeConfirm(true));
     btnNo.addEventListener('click', () => closeConfirm(false));
-    confirmOverlay.addEventListener('click', (e) => {
-      if (e.target === confirmOverlay) closeConfirm(false);
-    });
+    confirmOverlay.addEventListener('click', (e) => { if (e.target === confirmOverlay) closeConfirm(false); });
     document.addEventListener('keydown', (e) => {
       if (confirmOverlay.classList.contains('show')) {
         if (e.key === 'Escape') { e.preventDefault(); closeConfirm(false); }
@@ -507,27 +447,11 @@
     $('#history-close').addEventListener('click', () => closeHistory());
     $('#history-clear').addEventListener('click', async () => {
       const ok = await openConfirm('Are you sure you want to clear the entire history? This cannot be undone.');
-      if (ok) {
-        state.history = [];
-        saveState();
-        renderHistory();
-        closeHistory();
-        showToast('History cleared.');
-      }
+      if (ok) { state.history = []; saveState(); renderHistory(); closeHistory(); showToast('History cleared.'); }
     });
-    function openHistory() {
-      renderHistory();
-      historyOverlay.style.display = 'flex';
-      historyOverlay.classList.add('show');
-      $('#history-close').focus();
-    }
-    function closeHistory() {
-      historyOverlay.classList.remove('show');
-      historyOverlay.style.display = 'none';
-    }
-    historyOverlay.addEventListener('click', (e) => {
-      if (e.target === historyOverlay) closeHistory();
-    });
+    function openHistory() { renderHistory(); historyOverlay.style.display = 'flex'; historyOverlay.classList.add('show'); $('#history-close').focus(); }
+    function closeHistory() { historyOverlay.classList.remove('show'); historyOverlay.style.display = 'none'; }
+    historyOverlay.addEventListener('click', (e) => { if (e.target === historyOverlay) closeHistory(); });
 
     function renderHistory() {
       const h = [...state.history].sort((a,b) => b.ts - a.ts);
@@ -566,10 +490,7 @@
     const grid = $('#drug-grid');
     const logBody = $('#log-body');
 
-    function render() {
-      renderDrugs();
-      renderLog();
-    }
+    function render() { renderDrugs(); renderLog(); }
 
     function renderDrugs() {
       grid.innerHTML = '';
@@ -601,7 +522,6 @@
         nameErr.className = 'name-error';
         nameErr.textContent = 'This name is already in use.';
 
-        // Name editing with duplicate prevention
         nameEl.addEventListener('focus', () => { nameEl.dataset.prev = drug.name; });
         nameEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); nameEl.blur(); } });
         nameEl.addEventListener('input', () => {
@@ -624,10 +544,10 @@
           }
           drug.name = proposed;
           saveState();
-          render(); // update log and totals
+          render();
         });
 
-        // Color picker: custom accessible dropdown
+        // Color picker
         const colorWrap = document.createElement('div');
         colorWrap.className = 'color-picker';
         const colorLabel = document.createElement('label');
@@ -687,7 +607,7 @@
         numInput.type = 'number';
         numInput.step = 'any';
         numInput.placeholder = 'Amount';
-        numInput.min = '0'; // prevent negatives
+        numInput.min = '0';
         numInput.setAttribute('inputmode', 'decimal');
         numInput.setAttribute('aria-label', `Amount for ${drug.name}`);
 
@@ -695,56 +615,42 @@
         unitSelect.setAttribute('aria-label', `Unit for ${drug.name}`);
         for (const u of UNIT_OPTIONS) {
           const opt = document.createElement('option');
-          opt.value = u.value;
-          opt.textContent = u.label;
-          unitSelect.appendChild(opt);
+          opt.value = u.value; opt.textContent = u.label; unitSelect.appendChild(opt);
         }
-        unitSelect.value = 'mg';
+        unitSelect.value = drug.lastUnit || 'mg'; // remember last used unit per drug
 
         const addBtn = document.createElement('button');
         addBtn.className = 'add-btn';
         addBtn.textContent = 'Add';
-        addBtn.addEventListener('click', () => {
-          addEntryStandard(drug.id, drug.name, numInput, unitSelect, drug.color);
-        });
+        addBtn.addEventListener('click', () => { addEntryStandard(drug.id, drug.name, numInput, unitSelect, drug.color); });
 
         doseRow.appendChild(numInput);
         doseRow.appendChild(unitSelect);
         doseRow.appendChild(addBtn);
 
-        // Per-card meta (totals today)
         const meta = document.createElement('div');
         meta.className = 'meta';
         meta.id = `meta-${drug.id}`;
         meta.textContent = totalsForDrugLabel(drug.id);
 
-        // Compose card
         card.appendChild(nameRow);
         card.appendChild(colorWrap);
         card.appendChild(doseRow);
         card.appendChild(meta);
 
-        // Enter key adds from amount input
         numInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addBtn.click(); } });
 
-        // Remove button
         removeBtn.addEventListener('click', async () => {
           const labelText = drug?.name ? `the category "${drug.name}"` : 'this category';
           const ok = await openConfirm(`Are you sure you want to remove ${labelText}?`);
-          if (ok) {
-            removeDrug(drug.id);
-            showToast('Category removed.');
-          }
+          if (ok) { removeDrug(drug.id); showToast('Category removed.'); }
         });
 
         grid.appendChild(card);
       });
     }
 
-    // Close any open color menus when clicking outside
-    document.addEventListener('click', () => {
-      $$('.color-picker.open').forEach(el => el.classList.remove('open'));
-    });
+    document.addEventListener('click', () => { $$('.color-picker.open').forEach(el => el.classList.remove('open')); });
 
     function renderLog() {
       const entries = [...state.entries].sort((a,b) => b.ts - a.ts);
@@ -754,9 +660,9 @@
         return;
       }
 
-      // --- NEW: compute running totals ACROSS ALL DAYS (do not reset at midnight) ---
-      const totalsByEntryGlobal = new Map(); // entryId -> display string
-      const sumsByNameGlobal = new Map(); // nameKey -> Map(unit->sum)
+      // running totals across all days
+      const totalsByEntryGlobal = new Map();
+      const sumsByNameGlobal = new Map();
       const ascAll = [...state.entries].sort((a,b)=> a.ts - b.ts || (a.id > b.id ? 1 : -1));
       for (const e of ascAll) {
         const currentName = lookupDrugName(e.drugId) || e.drugNameAtEntry || 'Drug';
@@ -764,23 +670,15 @@
         const unitNorm = normalizeUnit(e.unit);
         if (!sumsByNameGlobal.has(nKey)) sumsByNameGlobal.set(nKey, new Map());
         const uMap = sumsByNameGlobal.get(nKey);
-        if (e.value != null && isFinite(e.value)) {
-          uMap.set(unitNorm, (uMap.get(unitNorm) || 0) + e.value);
-        }
+        if (e.value != null && isFinite(e.value)) { uMap.set(unitNorm, (uMap.get(unitNorm) || 0) + e.value); }
         const parts = [];
-        for (const [u,sum] of uMap.entries()) {
-          if (!isFinite(sum)) continue;
-          parts.push(displayValueUnit(sum, u));
-        }
+        for (const [u,sum] of uMap.entries()) { if (!isFinite(sum)) continue; parts.push(displayValueUnit(sum, u)); }
         totalsByEntryGlobal.set(e.id, parts.length ? parts.join(' • ') : '—');
       }
 
-      // Group by date for visual separation (unchanged)
+      // Group by date
       const groups = {};
-      for (const e of entries) {
-        const k = dayKey(e.ts);
-        (groups[k] ||= []).push(e);
-      }
+      for (const e of entries) { const k = dayKey(e.ts); (groups[k] ||= []).push(e); }
       const dayKeys = Object.keys(groups).sort((a,b) => (a<b?1:-1));
 
       for (const dk of dayKeys) {
@@ -788,10 +686,7 @@
         const trDate = document.createElement('tr');
         trDate.className = 'date-row';
         const td = document.createElement('td');
-        td.colSpan = 5;
-        td.textContent = dateLabel(d);
-        trDate.appendChild(td);
-        logBody.appendChild(trDate);
+        td.colSpan = 5; td.textContent = dateLabel(d); trDate.appendChild(td); logBody.appendChild(trDate);
 
         const dayEntries = groups[dk];
         const desc = [...dayEntries].sort((a,b)=> b.ts - a.ts);
@@ -799,18 +694,15 @@
           const tr = document.createElement('tr');
           tr.dataset.entryId = e.id;
 
+          // Drug cell with compact color chip background
           const tdDrug = document.createElement('td');
-          const pill = document.createElement('span');
-          pill.className = 'drug-pill';
-          const dot = document.createElement('span');
-          dot.className = 'color-dot';
-          dot.style.background = colorForEntry(e) || '#8ea8ff';
-          const nameSpan = document.createElement('span');
-          nameSpan.className = 'name-text';
-          nameSpan.textContent = lookupDrugName(e.drugId) || e.drugNameAtEntry || 'Drug';
-          pill.appendChild(dot);
-          pill.appendChild(nameSpan);
-          tdDrug.appendChild(pill);
+          const chip = document.createElement('span');
+          chip.className = 'drug-chip';
+          const bg = colorForEntry(e) || '#8ea8ff';
+          chip.style.background = bg;
+          chip.style.color = getContrastColor(bg);
+          chip.textContent = lookupDrugName(e.drugId) || e.drugNameAtEntry || 'Drug';
+          tdDrug.appendChild(chip);
 
           const tdTotal = document.createElement('td');
           tdTotal.textContent = totalsByEntryGlobal.get(e.id) || '—';
@@ -830,7 +722,6 @@
             timeInput.id = `edit-time-${e.id}`;
             timeInput.value = formatAsDatetimeLocal(e.ts);
 
-            // Save on Enter in either field
             const enterSave = (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); saveEdit(e.id); } };
             doseInput.addEventListener('keydown', enterSave);
             timeInput.addEventListener('keydown', enterSave);
@@ -891,35 +782,22 @@
       }
 
       // Update per-card totals (today)
-      state.drugs.forEach(d => {
-        const meta = document.getElementById(`meta-${d.id}`);
-        if (meta) meta.textContent = totalsForDrugLabel(d.id);
-      });
+      state.drugs.forEach(d => { const meta = document.getElementById(`meta-${d.id}`); if (meta) meta.textContent = totalsForDrugLabel(d.id); });
     }
 
-    function lookupDrugName(id) {
-      return state.drugs.find(d => d.id === id)?.name || null;
-    }
-    function lookupDrugColor(id) {
-      return state.drugs.find(d => d.id === id)?.color || null;
-    }
+    function lookupDrugName(id) { return state.drugs.find(d => d.id === id)?.name || null; }
+    function lookupDrugColor(id) { return state.drugs.find(d => d.id === id)?.color || null; }
     function colorForEntry(e) {
-      // prefer live color by id; fallback to history color by name
       return lookupDrugColor(e.drugId) || colorForName(lookupDrugName(e.drugId) || e.drugNameAtEntry);
     }
     function colorForName(name) {
       if (!name) return null;
       const live = state.drugs.find(d => nameKey(d.name) === nameKey(name));
       if (live) return live.color;
-      // fallback: last history record with this name
-      for (let i = state.history.length - 1; i >= 0; i--) {
-        const h = state.history[i];
-        if (nameKey(h.drugNameAtEntry) === nameKey(name)) return h.colorAtEntry;
-      }
+      for (let i = state.history.length - 1; i >= 0; i--) { const h = state.history[i]; if (nameKey(h.drugNameAtEntry) === nameKey(name)) return h.colorAtEntry; }
       return null;
     }
 
-    // Today totals for a card should aggregate by *name*, not id
     function totalsForDrugLabel(drugId) {
       const todayKeyStr = dayKey(new Date());
       const drug = state.drugs.find(d => d.id === drugId);
@@ -935,10 +813,7 @@
         units.set(u, (units.get(u) || 0) + e.value);
       }
       if (!units.size) return 'Today total: —';
-      const parts = [];
-      for (const [unit, sum] of units.entries()) {
-        parts.push(displayValueUnit(sum, unit));
-      }
+      const parts = []; for (const [unit, sum] of units.entries()) { parts.push(displayValueUnit(sum, unit)); }
       return `Today total: ${parts.join(' • ')}`;
     }
 
@@ -952,19 +827,19 @@
         setTimeout(() => (numInput.style.boxShadow = ''), 300);
         return;
       }
-      if (value < 0) {
-        showToast('Amount cannot be negative.');
-        numInput.focus();
-        numInput.style.boxShadow = '0 0 0 4px rgba(239, 68, 68, 0.35)';
-        setTimeout(() => (numInput.style.boxShadow = ''), 300);
-        return;
-      }
+      if (value < 0) { showToast('Amount cannot be negative.'); numInput.focus(); numInput.style.boxShadow = '0 0 0 4px rgba(239, 68, 68, 0.35)'; setTimeout(() => (numInput.style.boxShadow = ''), 300); return; }
+
       const unitRaw = unitSelect.value;
       const unitNorm = normalizeUnit(unitRaw);
-      const ts = new Date(); // time can be edited later in the table
+      const ts = new Date();
       const dosageText = displayValueUnit(value, unitRaw);
       const entry = { id: uid('e'), ts, drugId, drugNameAtEntry: currentDrugName, dosageText, value, unit: unitNorm, unitRaw };
       state.entries.push(entry);
+
+      // Remember last unit per drug
+      const drug = state.drugs.find(d => d.id === drugId);
+      if (drug) { drug.lastUnit = unitRaw; }
+
       // History
       state.history.push({ id: entry.id, ts: entry.ts, drugNameAtEntry: entry.drugNameAtEntry, dosageText, value, unit: unitNorm, colorAtEntry, addedAt: new Date(), removed: false, removedAt: null });
       saveState();
@@ -973,32 +848,19 @@
       numInput.focus();
     }
 
-    // Remove
-    function removeDrug(drugId) {
-      const idx = state.drugs.findIndex(d => d.id === drugId);
-      if (idx < 0) return;
-      state.drugs.splice(idx, 1);
-      saveState();
-      render();
-    }
+    function removeDrug(drugId) { const idx = state.drugs.findIndex(d => d.id === drugId); if (idx < 0) return; state.drugs.splice(idx, 1); saveState(); render(); }
 
     function removeEntry(entryId) {
       const idx = state.entries.findIndex(e => e.id === entryId);
       if (idx < 0) return;
       state.entries.splice(idx, 1);
-      // mark history
       const h = state.history.find(x => x.id === entryId);
       if (h) { h.removed = true; h.removedAt = new Date(); }
       saveState();
       render();
     }
 
-    function startEdit(entryId) {
-      editingId = entryId;
-      render();
-      const inp = document.getElementById(`edit-dose-${entryId}`);
-      if (inp) inp.focus();
-    }
+    function startEdit(entryId) { editingId = entryId; render(); const inp = document.getElementById(`edit-dose-${entryId}`); if (inp) inp.focus(); }
 
     function saveEdit(entryId) {
       const doseEl = document.getElementById(`edit-dose-${entryId}`);
@@ -1007,13 +869,7 @@
       if (!e || !doseEl || !timeEl) return;
       const dosage = (doseEl.value || '').trim();
       const { value, unit } = parseDosage(dosage);
-      if (value != null && isFinite(value) && value < 0) {
-        showToast('Amount cannot be negative.');
-        doseEl.focus();
-        doseEl.style.boxShadow = '0 0 0 4px rgba(239, 68, 68, 0.35)';
-        setTimeout(() => (doseEl.style.boxShadow = ''), 400);
-        return;
-      }
+      if (value != null && isFinite(value) && value < 0) { showToast('Amount cannot be negative.'); doseEl.focus(); doseEl.style.boxShadow = '0 0 0 4px rgba(239, 68, 68, 0.35)'; setTimeout(() => (doseEl.style.boxShadow = ''), 400); return; }
       e.dosageText = dosage;
       e.value = value;
       e.unit = normalizeUnit(unit);
@@ -1023,27 +879,18 @@
       render();
     }
 
-    function cancelEdit() {
-      editingId = null;
-      render();
-    }
+    function cancelEdit() { editingId = null; render(); }
 
-    // editing state
     let editingId = null; // entry currently being edited
 
     // --- Event delegation ---
     document.addEventListener('click', async (e) => {
-      // Clear all entries (with confirmation)
       if (e.target && e.target.id === 'clear-log') {
         if (!state.entries.length) return;
         const ok = await openConfirm('Are you sure you want to clear all entries?');
         if (ok) {
-          // mark history as removed
           const ids = state.entries.map(x => x.id);
-          for (const id of ids) {
-            const h = state.history.find(x => x.id === id);
-            if (h && !h.removed) { h.removed = true; h.removedAt = new Date(); }
-          }
+          for (const id of ids) { const h = state.history.find(x => x.id === id); if (h && !h.removed) { h.removed = true; h.removedAt = new Date(); } }
           state.entries = [];
           saveState();
           render();
@@ -1051,13 +898,8 @@
         }
       }
 
-      // Add drug
       if (e.target && e.target.id === 'add-med') {
-        // Ensure a unique default name
-        let i = state.drugs.length + 1;
-        let base = 'Drug ';
-        let candidate = base + i;
-        const names = new Set(state.drugs.map(d => nameKey(d.name)));
+        let i = state.drugs.length + 1; let base = 'Drug '; let candidate = base + i; const names = new Set(state.drugs.map(d => nameKey(d.name)));
         while (names.has(nameKey(candidate))) { i++; candidate = base + i; }
         const color = palette[state.drugs.length % palette.length];
         state.drugs.push({ id: uid('drug'), name: candidate, color });
@@ -1065,18 +907,11 @@
         render();
       }
 
-      // Entry actions
       const actionBtn = e.target.closest('[data-action]');
       if (actionBtn) {
         const action = actionBtn.dataset.action;
         const id = actionBtn.dataset.entryId;
-        if (action === 'remove-entry') {
-          const ok = await openConfirm('Are you sure you want to remove this entry?');
-          if (ok) {
-            removeEntry(id);
-            showToast('Entry removed.');
-          }
-        }
+        if (action === 'remove-entry') { const ok = await openConfirm('Are you sure you want to remove this entry?'); if (ok) { removeEntry(id); showToast('Entry removed.'); } }
         if (action === 'edit-entry') startEdit(id);
         if (action === 'save-edit') saveEdit(id);
         if (action === 'cancel-edit') cancelEdit();
