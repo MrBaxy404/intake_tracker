@@ -134,7 +134,12 @@
     .drug-pill .name-text { white-space: normal; overflow-wrap: anywhere; }
 
     /* NEW subtle color chip for the log's Drug column */
-    .drug-chip { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 999px; font-weight: 600; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 1px solid rgba(255,255,255,0.12); }
+    .drug-chip { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 999px; font-weight: 600; max-width: 100%; white-space: normal; overflow: visible; text-overflow: clip; border: 1px solid rgba(255,255,255,0.12); flex-wrap: wrap; }
+    .drug-chip > span:not(.dot) {
+      min-width: 0;
+      white-space: normal;
+      overflow-wrap: anywhere;    /* allows breaks inside long names */
+    }
     .drug-chip .dot { width: 10px; height: 10px; border-radius: 999px; flex: 0 0 10px; background: var(--dot, #8ea8ff); box-shadow: 0 0 0 1px rgba(0,0,0,0.15) inset; }
 
     .edit-input { width: 100%; }
@@ -191,7 +196,7 @@
       table { table-layout: fixed; width: 100%; }
       thead th { white-space: nowrap; }
       tbody td { white-space: normal; word-break: break-word; }
-      tbody td:nth-child(1) { white-space: nowrap; min-width: 80px; }
+      tbody td:nth-child(1) { white-space: normal; min-width: 80px; }
       tbody td:nth-child(4), thead th:nth-child(4) { white-space: nowrap; }
       thead th:nth-child(5) { width: 56px; }
     }
@@ -204,7 +209,7 @@
       thead th:nth-child(5) { width: 56px; }
       .row-actions { position: sticky; right: 0; background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%); }
       tbody td:nth-child(4) { white-space: nowrap; }
-      tbody td:nth-child(1) { white-space: nowrap; min-width: 80px; }
+      tbody td:nth-child(1) { white-space: normal; min-width: 80px; }
     }
   </style>
 </head>
