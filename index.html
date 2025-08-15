@@ -129,8 +129,10 @@
     .drug-pill {
       display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 999px;
       border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05);
+      max-width: 100%;
     }
-    .color-dot { width: 10px; height: 10px; border-radius: 999px; display: inline-block; }
+    .drug-pill .color-dot { width: 10px; height: 10px; border-radius: 999px; display: inline-block; }
+    .drug-pill .name-text { white-space: normal; overflow-wrap: anywhere; }
 
     .edit-input { width: 100%; }
 
@@ -214,16 +216,20 @@
       .log-header { padding: 12px; }
       thead th, tbody td { padding: 10px 12px; }
       .name { margin-right: 0; }
+      table { table-layout: fixed; }
+      thead th:nth-child(1) { width: 44%; }  /* Drug */
+      thead th:nth-child(2) { width: 26%; }  /* Total */
+      thead th:nth-child(3) { width: 20%; }  /* Doses */
+      thead th:nth-child(4) { width: 64px; } /* Time */
+      thead th:nth-child(5) { width: 56px; } /* Actions */
+      tbody td, thead th { overflow-wrap: anywhere; }
     }
 
     /* Make the delete “×” always visible on very small screens */
     @media (max-width: 480px) {
       .log { overflow: visible; }
       table { table-layout: fixed; }
-      /* Hide the verbose column to free space */
-      /* thead th:nth-child(3), tbody td:nth-child(3) { display: none; } */
-      /* Narrow time/actions */
-      thead th:nth-child(4) { width: 72px; }
+      thead th:nth-child(4) { width: 64px; }
       thead th:nth-child(5) { width: 56px; }
       .row-actions { position: sticky; right: 0; background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%); }
     }
@@ -363,26 +369,28 @@
       if (token === 'l') return 'L';
       if (token === 'ug' || token === 'mcg' || token === 'µg') return 'µg';
       // dropdown already supplies canonical tokens for the rest:
-      // 'mg','g','pill','tab','unit','drop'
-      return raw.toLowerCase(); // 'mg','g','pill','tab','unit','drop'
+      // 'mg','g','pill','tab','line','unit','drop'
+      return raw.toLowerCase(); // canonical: 'mg','g','pill','tab','line','unit','drop'
     }
     
     // Only keep PLURALS you actually use in the dropdown
     const PLURALS = {
       pill: ['pill', 'pills'],
       tab: ['tab', 'tabs'],
+      line: ['line', 'lines'],
       drop: ['drop', 'drops'],
       unit: ['unit', 'units']
     };
 
     function displayValueUnit(value, unit) {
       if (!unit) return fmtNumber(value);
-      const p = PLURALS[unit];
+      const uCanon = normalizeUnit(unit);
+      const p = PLURALS[uCanon];
       if (p) {
         const u = (value === 1) ? p[0] : p[1];
         return `${fmtNumber(value)} ${u}`;
       }
-      return `${fmtNumber(value)} ${unit}`;
+      return `${fmtNumber(value)} ${uCanon}`;
     }
 
     // Units for dropdown (exact order + set requested)
@@ -392,6 +400,7 @@
       { value: 'µg', label: 'µg' },
       { value: 'pill', label: 'pill' },
       { value: 'tab', label: 'tab' },
+      { value: 'line', label: 'line' },
       { value: 'unit', label: 'unit' },
       { value: 'ml', label: 'ml' },
       { value: 'l', label: 'l' },
@@ -540,6 +549,7 @@
         dot2.className = 'color-dot';
         dot2.style.background = item.colorAtEntry || '#8ea8ff';
         const nameSpan = document.createElement('span');
+        nameSpan.className = 'name-text';
         nameSpan.textContent = item.drugNameAtEntry || 'Drug';
         pillBadge.appendChild(dot2);
         pillBadge.appendChild(nameSpan);
@@ -684,6 +694,7 @@
         numInput.type = 'number';
         numInput.step = 'any';
         numInput.placeholder = 'Amount';
+        numInput.min = '0'; // prevent negatives
         numInput.setAttribute('inputmode', 'decimal');
         numInput.setAttribute('aria-label', `Amount for ${drug.name}`);
 
@@ -750,7 +761,28 @@
         return;
       }
 
-      // Group by date
+      // --- NEW: compute running totals ACROSS ALL DAYS (do not reset at midnight) ---
+      const totalsByEntryGlobal = new Map(); // entryId -> display string
+      const sumsByNameGlobal = new Map(); // nameKey -> Map(unit->sum)
+      const ascAll = [...state.entries].sort((a,b)=> a.ts - b.ts || (a.id > b.id ? 1 : -1));
+      for (const e of ascAll) {
+        const currentName = lookupDrugName(e.drugId) || e.drugNameAtEntry || 'Drug';
+        const nKey = nameKey(currentName);
+        const unitNorm = normalizeUnit(e.unit);
+        if (!sumsByNameGlobal.has(nKey)) sumsByNameGlobal.set(nKey, new Map());
+        const uMap = sumsByNameGlobal.get(nKey);
+        if (e.value != null && isFinite(e.value)) {
+          uMap.set(unitNorm, (uMap.get(unitNorm) || 0) + e.value);
+        }
+        const parts = [];
+        for (const [u,sum] of uMap.entries()) {
+          if (!isFinite(sum)) continue;
+          parts.push(displayValueUnit(sum, u));
+        }
+        totalsByEntryGlobal.set(e.id, parts.length ? parts.join(' • ') : '—');
+      }
+
+      // Group by date for visual separation (unchanged)
       const groups = {};
       for (const e of entries) {
         const k = dayKey(e.ts);
@@ -769,29 +801,6 @@
         logBody.appendChild(trDate);
 
         const dayEntries = groups[dk];
-
-        // Precompute running totals per *name* across ALL units (ascending by time)
-        const totalsByEntry = new Map(); // entryId -> display string
-        const sumsByName = new Map(); // nameKey -> Map(unit->sum)
-        const asc = [...dayEntries].sort((a,b)=> a.ts - b.ts || (a.id > b.id ? 1 : -1));
-        for (const e of asc) {
-          const currentName = lookupDrugName(e.drugId) || e.drugNameAtEntry || 'Drug';
-          const nKey = nameKey(currentName);
-          const unitNorm = normalizeUnit(e.unit);
-          if (!sumsByName.has(nKey)) sumsByName.set(nKey, new Map());
-          const uMap = sumsByName.get(nKey);
-          if (e.value != null && isFinite(e.value)) {
-            uMap.set(unitNorm, (uMap.get(unitNorm) || 0) + e.value);
-          }
-          const parts = [];
-          for (const [u,sum] of uMap.entries()) {
-            if (!isFinite(sum)) continue;
-            parts.push(displayValueUnit(sum, u));
-          }
-          totalsByEntry.set(e.id, parts.length ? parts.join(' • ') : '—');
-        }
-
-        // Render rows (descending by time)
         const desc = [...dayEntries].sort((a,b)=> b.ts - a.ts);
         for (const e of desc) {
           const tr = document.createElement('tr');
@@ -804,13 +813,14 @@
           dot.className = 'color-dot';
           dot.style.background = colorForEntry(e) || '#8ea8ff';
           const nameSpan = document.createElement('span');
+          nameSpan.className = 'name-text';
           nameSpan.textContent = lookupDrugName(e.drugId) || e.drugNameAtEntry || 'Drug';
           pill.appendChild(dot);
           pill.appendChild(nameSpan);
           tdDrug.appendChild(pill);
 
           const tdTotal = document.createElement('td');
-          tdTotal.textContent = totalsByEntry.get(e.id) || '—';
+          tdTotal.textContent = totalsByEntryGlobal.get(e.id) || '—';
 
           const tdDose = document.createElement('td');
           const tdTimeCell = document.createElement('td');
@@ -949,6 +959,13 @@
         setTimeout(() => (numInput.style.boxShadow = ''), 300);
         return;
       }
+      if (value < 0) {
+        showToast('Amount cannot be negative.');
+        numInput.focus();
+        numInput.style.boxShadow = '0 0 0 4px rgba(239, 68, 68, 0.35)';
+        setTimeout(() => (numInput.style.boxShadow = ''), 300);
+        return;
+      }
       const unitRaw = unitSelect.value;
       const unitNorm = normalizeUnit(unitRaw);
       const ts = new Date(); // time can be edited later in the table
@@ -997,6 +1014,13 @@
       if (!e || !doseEl || !timeEl) return;
       const dosage = (doseEl.value || '').trim();
       const { value, unit } = parseDosage(dosage);
+      if (value != null && isFinite(value) && value < 0) {
+        showToast('Amount cannot be negative.');
+        doseEl.focus();
+        doseEl.style.boxShadow = '0 0 0 4px rgba(239, 68, 68, 0.35)';
+        setTimeout(() => (doseEl.style.boxShadow = ''), 400);
+        return;
+      }
       e.dosageText = dosage;
       e.value = value;
       e.unit = normalizeUnit(unit);
