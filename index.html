@@ -45,21 +45,11 @@
     header p { margin: 0 0 18px; color: var(--muted); }
 
     .inline-link {
-      background: transparent;
-      border: 0;
-      padding: 0;
-      margin-left: 6px;
-      color: var(--muted);
-      text-decoration: underline;
-      font-weight: 500;      /* regular link weight */
-      cursor: pointer;
+      background: transparent; border: 0; padding: 0; margin-left: 6px; color: var(--muted);
+      text-decoration: underline; font-weight: 500; cursor: pointer;
     }
     .inline-link:hover { text-decoration: none; }
-    .inline-link:focus-visible {
-      outline: 2px solid var(--accent-2);
-      outline-offset: 2px;
-      border-radius: 2px;
-    }
+    .inline-link:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; border-radius: 2px; }
 
     .toolbar { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
     .toolbar button { padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); cursor: pointer; }
@@ -120,7 +110,7 @@
     button.add-btn:hover { background: rgba(79, 124, 255, 0.25); }
     button.add-btn:active { transform: translateY(1px); }
 
-    .meta { margin-top: 6px; font-size: 12px; color: var(--muted); min-height: 18px; }
+    .meta { margin-top: 6px; font-size: 12px; color: var(--muted); min-height: 18px; display: inline-flex; gap: 12px; flex-wrap: wrap; }
 
     .log { margin-top: 26px; background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%); border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
     .log-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); }
@@ -152,11 +142,7 @@
 
     /* NEW subtle color chip for the log's Drug column */
     .drug-chip { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 999px; font-weight: 600; max-width: 100%; white-space: normal; overflow: visible; text-overflow: clip; border: 1px solid rgba(255,255,255,0.12); flex-wrap: wrap; }
-    .drug-chip > span:not(.dot) {
-      min-width: 0;
-      white-space: normal;
-      overflow-wrap: anywhere;    /* allows breaks inside long names */
-    }
+    .drug-chip > span:not(.dot) { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
     .drug-chip .dot { width: 10px; height: 10px; border-radius: 999px; flex: 0 0 10px; background: var(--dot, #8ea8ff); box-shadow: 0 0 0 1px rgba(0,0,0,0.15) inset; }
 
     .edit-input { width: 100%; }
@@ -210,39 +196,17 @@
 
       .log { overflow-x: hidden; }
       table { table-layout: fixed; width: 100%; }
-    
-      /* headers never wrap */
       thead th { white-space: nowrap; }
-    
-      /* Column widths tuned for small phones (sum <= 100% even after a fixed actions column) */
-      /* 1 = Drug | 2 = Total | 3 = Doses | 4 = Time | 5 = Actions */
-      thead th:nth-child(1), tbody td:nth-child(1) { width: 28%; }   /* just enough to show "Drug" inside the chip */
-      thead th:nth-child(2), tbody td:nth-child(2) { width: 16%; }   /* Total header fits; content can wrap */
-      thead th:nth-child(3), tbody td:nth-child(3) { width: 16%; }   /* Doses header fits; content can wrap */
-      thead th:nth-child(4), tbody td:nth-child(4) { width: 20%; white-space: nowrap; } /* Time never wraps */
-      thead th:nth-child(5), tbody td:nth-child(5) { width: 56px; }  /* Actions visible, not cut off */
-    
-      /* Allow wrapping in Total & Doses cells (e.g., "50" on one line, "mg" below) */
-      tbody td:nth-child(2),
-      tbody td:nth-child(3) {
-        white-space: normal;
-        word-break: normal;
-        overflow-wrap: anywhere; /* permit a tidy break between number and unit if narrow */
-      }
-    
-      /* Keep the Drug chip compact; show at least the word "Drug" without wrapping */
-      tbody td:nth-child(1) .drug-chip {
-        display: inline-flex;
-        max-width: 100%;
-        white-space: nowrap;        /* don't split 'Drug' across lines */
-        overflow: hidden;           /* longer names get gracefully clipped */
-        text-overflow: ellipsis;    /* add … if too long */
-      }
-    
-      /* Slightly tighter padding on small screens */
+      /* Column widths tuned for small phones */
+      thead th:nth-child(1), tbody td:nth-child(1) { width: 28%; }
+      thead th:nth-child(2), tbody td:nth-child(2) { width: 16%; }
+      thead th:nth-child(3), tbody td:nth-child(3) { width: 16%; }
+      thead th:nth-child(4), tbody td:nth-child(4) { width: 20%; white-space: nowrap; }
+      thead th:nth-child(5), tbody td:nth-child(5) { width: 56px; }
+      tbody td:nth-child(2), tbody td:nth-child(3) { white-space: normal; word-break: normal; overflow-wrap: anywhere; }
+      tbody td:nth-child(1) .drug-chip { display: inline-flex; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       thead th, tbody td { padding: 8px 10px; }
     }
-    
   </style>
 </head>
 <body>
@@ -359,17 +323,6 @@
       return `${y}-${m}-${day}`;
     }
 
-    function parseDosage(text) {
-      const t = (text||'').trim();
-      const t2 = t.replace(',', '.');
-      const m = t2.match(/^([+-]?\d*\.?\d+)\s*([a-zA-Zµμ%][\wµμ%\/]*)?/);
-      if (!m) return { value: null, unit: null };
-      const value = parseFloat(m[1]);
-      const unit = (m[2] || '').trim();
-      if (!isFinite(value)) return { value: null, unit };
-      return { value, unit };
-    }
-
     function fmtNumber(n) {
       if (n == null || !isFinite(n)) return '';
       return (Math.round(n*1000)/1000).toString();
@@ -423,7 +376,7 @@
       return `${fmtNumber(value)} ${uCanon}`;
     }
 
-    // Units for dropdown (order requested)
+    // Units for dropdown
     const UNIT_OPTIONS = [
       { value: 'mg', label: 'mg' },
       { value: 'g', label: 'g' },
@@ -437,7 +390,7 @@
       { value: 'drop', label: 'drop' }
     ];
 
-    // Fixed 10-color palette across spectrum (defined BEFORE loadState)
+    // Fixed 10-color palette across spectrum
     const palette = ['#ef4444','#f59e0b','#eab308','#84cc16','#22c55e','#10b981','#06b6d4','#3b82f6','#8b5cf6','#ec4899'];
     const paletteNames = ['Red','Orange','Yellow','Lime','Green','Teal','Cyan','Blue','Violet','Pink'];
 
@@ -556,7 +509,7 @@
     const grid = $('#drug-grid');
     const logBody = $('#log-body');
 
-    function render() { renderDrugs(); renderLog(); }
+    function render() { renderDrugs(); renderLog(); updateLastDoseLabels(); }
 
     function renderDrugs() {
       grid.innerHTML = '';
@@ -613,7 +566,7 @@
           render();
         });
 
-        // Color picker
+        // Color picker (moved to bottom later)
         const colorWrap = document.createElement('div');
         colorWrap.className = 'color-picker';
         const colorLabel = document.createElement('label');
@@ -639,13 +592,12 @@
           opt.dataset.value = hex;
           opt.innerHTML = `<span class="swatch" style="--swatch:${hex}"></span><span class="label">${paletteNames[i]}</span>`;
           if (hex === current) opt.setAttribute('aria-selected', 'true');
-          let picked = false; // guard against double-fire (pointerup + click)
+          let picked = false;
           function onPick(ev) {
             if (picked) return;
             picked = true;
-            ev?.stopPropagation?.();   // don't let the tap bubble and close before we handle it
-            ev?.preventDefault?.();    // avoid stray default behaviors
-          
+            ev?.stopPropagation?.();
+            ev?.preventDefault?.();
             drug.color = hex;
             colorBtn.style.setProperty('--swatch', hex);
             colorBtn.querySelector('.label').textContent = paletteNames[i];
@@ -654,9 +606,8 @@
             colorWrap.classList.remove('open');
             colorBtn.setAttribute('aria-expanded', 'false');
           }
-          
-          opt.addEventListener('pointerup', onPick); // fires immediately on touch release
-          opt.addEventListener('click', onPick);     // desktop & fallback
+          opt.addEventListener('pointerup', onPick);
+          opt.addEventListener('click', onPick);
           menu.appendChild(opt);
         });
 
@@ -703,15 +654,24 @@
         doseRow.appendChild(unitSelect);
         doseRow.appendChild(addBtn);
 
+        // Meta row: Total + Last Dose (side-by-side)
         const meta = document.createElement('div');
         meta.className = 'meta';
         meta.id = `meta-${drug.id}`;
-        meta.textContent = totalsForDrugLabel(drug.id);
+        const totalSpan = document.createElement('span');
+        totalSpan.id = `meta-total-${drug.id}`;
+        totalSpan.textContent = totalsForDrugLabel(drug.id);
+        const lastSpan = document.createElement('span');
+        lastSpan.id = `last-${drug.id}`;
+        lastSpan.textContent = 'Last Dose: —';
+        meta.appendChild(totalSpan);
+        meta.appendChild(lastSpan);
 
+        // Assemble card (color picker moved to bottom, below meta)
         card.appendChild(nameRow);
-        card.appendChild(colorWrap);
         card.appendChild(doseRow);
         card.appendChild(meta);
+        card.appendChild(colorWrap);
 
         numInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addBtn.click(); } });
 
@@ -732,10 +692,17 @@
       logBody.innerHTML = '';
       if (!entries.length) {
         logBody.innerHTML = '<tr class="empty-row"><td colspan="5">No entries yet — add a dosage above to get started.</td></tr>';
+        // ensure totals + last dose clear when no entries
+        state.drugs.forEach(d => {
+          const totalEl = document.getElementById(`meta-total-${d.id}`);
+          if (totalEl) totalEl.textContent = totalsForDrugLabel(d.id);
+          const lastEl = document.getElementById(`last-${d.id}`);
+          if (lastEl) lastEl.textContent = 'Last Dose: —';
+        });
         return;
       }
 
-      // running totals across ALL days
+      // running totals across ALL days (for the log table's Total column)
       const totalsByEntryGlobal = new Map();
       const sumsByNameGlobal = new Map();
       const ascAll = [...state.entries].sort((a,b)=> a.ts - b.ts || (a.id > b.id ? 1 : -1));
@@ -769,7 +736,7 @@
           const tr = document.createElement('tr');
           tr.dataset.entryId = e.id;
 
-          // Drug cell with subtle color chip background + dot
+          // Drug cell with subtle color chip background
           const tdDrug = document.createElement('td');
           const chip = document.createElement('span');
           chip.className = 'drug-chip';
@@ -778,7 +745,6 @@
           const border = hexToRgba(bg, 0.35);
           chip.style.background = tint;
           chip.style.borderColor = border;
-          // chip text color stays default for consistency with dark theme
           const nameSpan = document.createElement('span');
           nameSpan.textContent = lookupDrugName(e.drugId) || e.drugNameAtEntry || 'Drug';
           chip.appendChild(nameSpan);
@@ -791,7 +757,6 @@
           const tdTimeCell = document.createElement('td');
 
           if (editingId === e.id) {
-            // amount (number) + unit (dropdown), just like add UI
             const amountInput = document.createElement('input');
             amountInput.type = 'number';
             amountInput.step = 'any';
@@ -818,7 +783,6 @@
             unitSelect.addEventListener('keydown', enterSave);
             timeInput.addEventListener('keydown', enterSave);
 
-            // Put number + unit into the Doses cell
             const amtWrap = document.createElement('div');
             amtWrap.style.display = 'grid';
             amtWrap.style.gridTemplateColumns = '1fr 120px';
@@ -880,8 +844,11 @@
         }
       }
 
-      // Update per-card totals (ALL TIME)
-      state.drugs.forEach(d => { const meta = document.getElementById(`meta-${d.id}`); if (meta) meta.textContent = totalsForDrugLabel(d.id); });
+      // Update per-card totals (ALL TIME) without clobbering Last Dose
+      state.drugs.forEach(d => {
+        const totalEl = document.getElementById(`meta-total-${d.id}`);
+        if (totalEl) totalEl.textContent = totalsForDrugLabel(d.id);
+      });
     }
 
     function lookupDrugName(id) { return state.drugs.find(d => d.id === id)?.name || null; }
@@ -912,6 +879,40 @@
       if (!units.size) return 'Total: —';
       const parts = []; for (const [unit, sum] of units.entries()) { parts.push(displayValueUnit(sum, unit)); }
       return `Total: ${parts.join(' • ')}`;
+    }
+
+    // --- Last Dose helpers ---
+    function lastDoseDate(drugId) {
+      let latest = null;
+      for (const e of state.entries) {
+        if (e.drugId !== drugId) continue;
+        if (!latest || e.ts > latest) latest = e.ts;
+      }
+      return latest;
+    }
+
+    function formatSinceLabel(date) {
+      if (!date) return 'Last Dose: —';
+      const now = new Date();
+      let diffMin = Math.floor((now - date) / 60000); // minutes
+      const inFuture = diffMin < 0;
+      if (inFuture) diffMin = Math.abs(diffMin);
+      if (diffMin < 1) return inFuture ? 'Last Dose: in &lt;1m' : 'Last Dose: just now';
+      if (diffMin < 60) return `Last Dose: ${diffMin}min ${inFuture ? '' : 'ago'}`.trim();
+      const hours = Math.floor(diffMin / 60);
+      const mins = diffMin % 60;
+      if (diffMin < 1440) return `Last Dose: ${hours}h ${mins}min ${inFuture ? '' : 'ago'}`.trim();
+      const days = Math.floor(hours / 24);
+      const remH = hours % 24;
+      return `Last Dose: ${days}d ${remH}h ${inFuture ? '' : 'ago'}`.trim();
+    }
+
+    function updateLastDoseLabels() {
+      state.drugs.forEach(d => {
+        const el = document.getElementById(`last-${d.id}`);
+        if (!el) return;
+        el.textContent = formatSinceLabel(lastDoseDate(d.id));
+      });
     }
 
     // --- Add entries (standard only) ---
@@ -1051,8 +1052,16 @@
       }
     });
 
+    // Periodic updater for "Last Dose" (every minute)
+    let lastDoseTicker = null;
+    function ensureTicker() {
+      if (lastDoseTicker) return;
+      lastDoseTicker = setInterval(updateLastDoseLabels, 60000);
+    }
+
     // Initial render
     render();
+    ensureTicker();
   </script>
 </body>
 </html>
