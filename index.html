@@ -207,28 +207,60 @@
       .dose-grid { grid-template-columns: 1fr 120px auto; }
       .toolbar button { padding: 12px 14px; }
       .log-header { padding: 12px; }
-      thead th, tbody td { padding: 8px 10px; }
-      .name { margin-right: 0; }
+
       .log { overflow-x: hidden; }
       table { table-layout: fixed; width: 100%; }
+    
+      /* headers never wrap */
       thead th { white-space: nowrap; }
-      tbody td { white-space: normal; word-break: break-word; }
-      /* Give the Drug column a little more space on mobile */
-      thead th:nth-child(1), tbody td:nth-child(1) { width: 28%; }
-      /* Keep Time tight and never wrapped */
-      thead th:nth-child(4), tbody td:nth-child(4) { white-space: nowrap; width: 1%; }
-      /* Compact actions column */
-      thead th:nth-child(5) { width: 56px; }
+    
+      /* Column widths tuned for small phones (sum <= 100% even after a fixed actions column) */
+      /* 1 = Drug | 2 = Total | 3 = Doses | 4 = Time | 5 = Actions */
+      thead th:nth-child(1), tbody td:nth-child(1) { width: 28%; }   /* just enough to show "Drug" inside the chip */
+      thead th:nth-child(2), tbody td:nth-child(2) { width: 16%; }   /* Total header fits; content can wrap */
+      thead th:nth-child(3), tbody td:nth-child(3) { width: 16%; }   /* Doses header fits; content can wrap */
+      thead th:nth-child(4), tbody td:nth-child(4) { width: 20%; white-space: nowrap; } /* Time never wraps */
+      thead th:nth-child(5), tbody td:nth-child(5) { width: 56px; }  /* Actions visible, not cut off */
+    
+      /* Allow wrapping in Total & Doses cells (e.g., "50" on one line, "mg" below) */
+      tbody td:nth-child(2),
+      tbody td:nth-child(3) {
+        white-space: normal;
+        word-break: normal;
+        overflow-wrap: anywhere; /* permit a tidy break between number and unit if narrow */
+      }
+    
+      /* Keep the Drug chip compact; show at least the word "Drug" without wrapping */
+      tbody td:nth-child(1) .drug-chip {
+        display: inline-flex;
+        max-width: 100%;
+        white-space: nowrap;        /* don't split 'Drug' across lines */
+        overflow: hidden;           /* longer names get gracefully clipped */
+        text-overflow: ellipsis;    /* add … if too long */
+      }
+    
+      /* Slightly tighter padding on small screens */
+      thead th, tbody td { padding: 8px 10px; }
     }
 
-    /* Make the delete/actions area compact on very small screens without horizontal scroll */
     @media (max-width: 480px) {
-      .log { overflow-x: hidden; }
-      table { table-layout: fixed; }
-      thead th:nth-child(4), tbody td:nth-child(4) { width: 1%; white-space: nowrap; }
-      thead th:nth-child(5) { width: 56px; }
-      .row-actions { position: sticky; right: 0; background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%); }
-    }
+      /* Allow horizontal scrolling instead of shrinking columns */
+      .log {
+        overflow-x: auto;                 /* <- enable horizontal scroll */
+        -webkit-overflow-scrolling: touch;/* smooth scroll on iOS */
+      }
+      table {
+        table-layout: fixed;
+        width: 100%;
+        min-width: 560px;                 /* safeguard: keep columns roomy; adjust if needed */
+      }
+    
+      /* Keep Actions clearly visible (same width as in ≤720px block) */
+      thead th:nth-child(5), tbody td:nth-child(5) { width: 56px; }
+    
+      /* Optional: remove sticky so it doesn't overlap while scrolling horizontally */
+      .row-actions { position: static; background: none; }
+  }
   </style>
 </head>
 <body>
