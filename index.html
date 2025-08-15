@@ -44,8 +44,22 @@
     header h1 { font-size: clamp(22px, 3vw, 32px); margin: 0 0 6px; letter-spacing: 0.3px; }
     header p { margin: 0 0 18px; color: var(--muted); }
 
-    .inline-link { background: none; border: none; color: var(--accent-2); cursor: pointer; text-decoration: underline; padding: 0 0 0 8px; font-weight: 700; }
+    .inline-link {
+      background: transparent;
+      border: 0;
+      padding: 0;
+      margin-left: 6px;
+      color: var(--accent-2);
+      text-decoration: underline;
+      font-weight: 500;      /* regular link weight */
+      cursor: pointer;
+    }
     .inline-link:hover { text-decoration: none; }
+    .inline-link:focus-visible {
+      outline: 2px solid var(--accent-2);
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
 
     .toolbar { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
     .toolbar button { padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); cursor: pointer; }
@@ -221,7 +235,7 @@
   <div class="container">
     <header>
       <h1>Drug Tracker</h1>
-      <p>Track drug dosage and timing easily on any device. <button id="privacy-open" class="inline-link" aria-haspopup="dialog" aria-controls="privacy">Privacy Information</button></p>
+      <p>Track drug dosage and timing easily on any device. <a href="#" id="privacy-open" class="inline-link" aria-haspopup="dialog" aria-controls="privacy" role="button">Privacy Information</a></p>
     </header>
 
     <div class="toolbar">
@@ -1007,7 +1021,12 @@
     const privacyOverlay = $('#privacy');
     const privacyOpen = $('#privacy-open');
     const privacyClose = $('#privacy-close');
-    privacyOpen.addEventListener('click', () => { privacyOverlay.style.display='flex'; privacyOverlay.classList.add('show'); privacyClose.focus(); });
+    privacyOpen.addEventListener('click', (e) => {
+      e.preventDefault();
+      privacyOverlay.style.display = 'flex';
+      privacyOverlay.classList.add('show');
+      privacyClose.focus();
+    });
     privacyClose.addEventListener('click', () => { privacyOverlay.classList.remove('show'); privacyOverlay.style.display='none'; });
     privacyOverlay.addEventListener('click', (e) => { if (e.target === privacyOverlay) { privacyOverlay.classList.remove('show'); privacyOverlay.style.display='none'; } });
     document.addEventListener('keydown', (e) => {
