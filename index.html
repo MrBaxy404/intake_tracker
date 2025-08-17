@@ -81,7 +81,7 @@
     .name-row { display: flex; align-items: center; gap: 8px; }
     .name-error { color: var(--danger); font-size: 12px; margin: 0 0 6px 0; display: none; }
 
-    /* Color picker (custom dropdown) */
+    /* Color picker */
     .color-picker { position: relative; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .color-picker label { font-size: 12px; color: var(--muted); }
     .color-select-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); cursor: pointer; }
@@ -96,9 +96,9 @@
 
     .input-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
 
-    input[type="text"], input[type="datetime-local"], input[type="number"], select { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); outline: none; transition: border-color .15s ease, background .15s ease, box-shadow .15s ease; }
+    input[type="text"], input[type="datetime-local"], input[type="time"], input[type="date"], input[type="number"], select { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); outline: none; transition: border-color .15s ease, background .15s ease, box-shadow .15s ease; }
     input[type="text"]::placeholder { color: #9aa4d3; }
-    input[type="text"]:focus, input[type="datetime-local"]:focus, input[type="number"]:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(79, 124, 255, 0.25); background: rgba(255,255,255,0.1); }
+    input[type="text"]:focus, input[type="datetime-local"]:focus, input[type="time"]:focus, input[type="date"]:focus, input[type="number"]:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(79, 124, 255, 0.25); background: rgba(255,255,255,0.1); }
 
     input[type="number"]::-webkit-outer-spin-button,
     input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
@@ -131,7 +131,7 @@
     .icon-btn:hover { color: var(--text); }
     .icon-danger:hover { color: var(--danger); }
 
-    /* OLD pill (kept for History view) */
+    /* Drug pill for History view */
     .drug-pill {
       display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 999px;
       border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05);
@@ -140,12 +140,18 @@
     .drug-pill .color-dot { width: 10px; height: 10px; border-radius: 999px; display: inline-block; }
     .drug-pill .name-text { white-space: normal; overflow-wrap: anywhere; }
 
-    /* NEW subtle color chip for the log's Drug column */
+    /* Subtle color chip for the log's Drug column */
     .drug-chip { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 999px; font-weight: 600; max-width: 100%; white-space: normal; overflow: visible; text-overflow: clip; border: 1px solid rgba(255,255,255,0.12); flex-wrap: wrap; }
     .drug-chip > span:not(.dot) { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
     .drug-chip .dot { width: 10px; height: 10px; border-radius: 999px; flex: 0 0 10px; background: var(--dot, #8ea8ff); box-shadow: 0 0 0 1px rgba(0,0,0,0.15) inset; }
 
     .edit-input { width: 100%; }
+
+    /* Time editing controls */
+    .time-edit-container { display: flex; gap: 8px; align-items: center; }
+    .date-toggle { padding: 6px 8px; font-size: 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); cursor: pointer; white-space: nowrap; }
+    .date-toggle:hover { background: rgba(255,255,255,0.12); }
+    .date-toggle.active { background: rgba(79, 124, 255, 0.25); border-color: var(--accent); }
 
     /* Snackbar */
     .snackbar { position: fixed; left: 50%; bottom: calc(24px + var(--safe-bottom)); transform: translateX(-50%);
@@ -175,8 +181,16 @@
     .btn-ghost { background: transparent; border-color: rgba(255,255,255,0.15); }
 
     /* History Floating Button */
-    .history-fab { position: fixed; right: 16px; bottom: calc(16px + var(--safe-bottom)); min-width: 48px; height: 48px; padding: 0 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.08); color: var(--text); box-shadow: var(--shadow); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1050; font-weight: 700; }
+    .history-fab { 
+      position: fixed; right: 16px; bottom: calc(16px + var(--safe-bottom)); 
+      min-width: 48px; height: 48px; padding: 0 14px; border-radius: 14px; 
+      border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.08); 
+      color: var(--text); box-shadow: var(--shadow); display: inline-flex; 
+      align-items: center; justify-content: center; cursor: pointer; z-index: 1050; 
+      font-weight: 700; transition: opacity 0.2s ease, transform 0.2s ease;
+    }
     .history-fab:hover { background: rgba(255,255,255,0.14); }
+    .history-fab.hidden { opacity: 0; transform: translateY(20px); pointer-events: none; }
 
     /* History modal styles */
     .history-list { display: grid; gap: 10px; }
@@ -194,18 +208,28 @@
       .toolbar button { padding: 12px 14px; }
       .log-header { padding: 12px; }
 
-      .log { overflow-x: hidden; }
-      table { table-layout: fixed; width: 100%; }
+      .log { overflow-x: auto; }
+      table { table-layout: fixed; width: 100%; min-width: 600px; }
       thead th { white-space: nowrap; }
-      /* Column widths tuned for small phones */
-      thead th:nth-child(1), tbody td:nth-child(1) { width: 28%; }
-      thead th:nth-child(2), tbody td:nth-child(2) { width: 16%; }
-      thead th:nth-child(3), tbody td:nth-child(3) { width: 16%; }
-      thead th:nth-child(4), tbody td:nth-child(4) { width: 20%; white-space: nowrap; }
-      thead th:nth-child(5), tbody td:nth-child(5) { width: 56px; }
+      /* Column widths for mobile */
+      thead th:nth-child(1), tbody td:nth-child(1) { width: 140px; }
+      thead th:nth-child(2), tbody td:nth-child(2) { width: 100px; }
+      thead th:nth-child(3), tbody td:nth-child(3) { width: 120px; }
+      thead th:nth-child(4), tbody td:nth-child(4) { width: 140px; }
+      thead th:nth-child(5), tbody td:nth-child(5) { width: 100px; }
+      
+      /* Editing row gets more space */
+      tbody tr.editing { min-width: 800px; }
+      tbody tr.editing td:nth-child(3) { width: 200px; }
+      tbody tr.editing td:nth-child(4) { width: 180px; }
+      
       tbody td:nth-child(2), tbody td:nth-child(3) { white-space: normal; word-break: normal; overflow-wrap: anywhere; }
       tbody td:nth-child(1) .drug-chip { display: inline-flex; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-      thead th, tbody td { padding: 8px 10px; }
+      thead th, tbody td { padding: 8px 6px; font-size: 13px; }
+      
+      /* Time edit container adjustments for mobile */
+      .time-edit-container { flex-direction: column; gap: 4px; align-items: stretch; }
+      .date-toggle { font-size: 11px; padding: 4px 6px; }
     }
   </style>
 </head>
@@ -294,9 +318,9 @@
       </div>
       <div class="privacy-content">
         <p><em>Your data stays on your device.</em></p>
-        <p>Everything you enter is saved only in your browser’s local storage.</p>
+        <p>Everything you enter is saved only in your browser's local storage.</p>
         <p>We do not send, upload, or store your entries anywhere else — not on a server, not in the cloud.</p>
-        <p>To remove your data, use “Clear All” or “Clear History,” or clear your browser’s storage for this site.</p>
+        <p>To remove your data, use "Clear All" or "Clear History," or clear your browser's storage for this site.</p>
       </div>
     </div>
   </div>
@@ -330,22 +354,18 @@
 
     function uid(prefix='id') { return `${prefix}_${Math.random().toString(36).slice(2,9)}_${Date.now().toString(36)}`; }
 
-    function formatAsDatetimeLocal(d) {
+    function formatAsTime(d) {
       const pad = (n) => String(n).padStart(2, '0');
-      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function formatAsDate(d) {
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
     }
 
     // Canonical/normalized name key for grouping by drug name (case/space-insensitive)
     function nameKey(str) { return (str || '').toString().trim().toLowerCase(); }
-
-    // Determine readable text color (black/white) against a given hex background
-    function getContrastColor(hex) {
-      const v = (hex || '').replace('#','');
-      const r = parseInt(v.substring(0,2),16), g = parseInt(v.substring(2,4),16), b = parseInt(v.substring(4,6),16);
-      const toLin = (c) => { const s = c/255; return s <= 0.04045 ? s/12.92 : Math.pow((s+0.055)/1.055, 2.4); };
-      const L = 0.2126*toLin(r) + 0.7152*toLin(g) + 0.0722*toLin(b);
-      return L > 0.5 ? '#000' : '#fff';
-    }
 
     function hexToRgba(hex, a = 1) {
       const v = (hex || '').replace('#','');
@@ -355,7 +375,7 @@
       return `rgba(${r},${g},${b},${a})`;
     }
 
-    // --- Unit normalization & pluralization (slim) ---
+    // --- Unit normalization & pluralization ---
     function normalizeUnit(unitRaw) {
       if (!unitRaw) return '';
       const raw = unitRaw.trim();
@@ -363,7 +383,7 @@
       if (token === 'ml') return 'mL';
       if (token === 'l') return 'L';
       if (token === 'ug' || token === 'mcg' || token === 'µg') return 'µg';
-      return raw.toLowerCase(); // canonical
+      return raw.toLowerCase();
     }
 
     const PLURALS = { pill: ['pill', 'pills'], tab: ['tab', 'tabs'], line: ['line', 'lines'], drop: ['drop', 'drops'], unit: ['unit', 'units'] };
@@ -390,7 +410,7 @@
       { value: 'drop', label: 'drop' }
     ];
 
-    // Fixed 10-color palette across spectrum
+    // Color palette
     const palette = ['#ef4444','#f59e0b','#eab308','#84cc16','#22c55e','#10b981','#06b6d4','#3b82f6','#8b5cf6','#ec4899'];
     const paletteNames = ['Red','Orange','Yellow','Lime','Green','Teal','Cyan','Blue','Violet','Pink'];
 
@@ -462,12 +482,15 @@
     // History modal
     const historyOverlay = $('#history');
     const historyListEl = $('#history-list');
+    const historyFab = $('#open-history');
+    
     $('#open-history').addEventListener('click', () => openHistory());
     $('#history-close').addEventListener('click', () => closeHistory());
     $('#history-clear').addEventListener('click', async () => {
       const ok = await openConfirm('Are you sure you want to clear the entire history? This cannot be undone.');
       if (ok) { state.history = []; saveState(); renderHistory(); closeHistory(); showToast('History cleared.'); }
     });
+    
     function openHistory() { renderHistory(); historyOverlay.style.display = 'flex'; historyOverlay.classList.add('show'); $('#history-close').focus(); }
     function closeHistory() { historyOverlay.classList.remove('show'); historyOverlay.style.display = 'none'; }
     historyOverlay.addEventListener('click', (e) => { if (e.target === historyOverlay) closeHistory(); });
@@ -508,8 +531,17 @@
     // --- Rendering ---
     const grid = $('#drug-grid');
     const logBody = $('#log-body');
+    let editingId = null;
 
-    function render() { renderDrugs(); renderLog(); updateLastDoseLabels(); }
+    function render() { renderDrugs(); renderLog(); updateLastDoseLabels(); updateHistoryButton(); }
+
+    function updateHistoryButton() {
+      if (editingId) {
+        historyFab.classList.add('hidden');
+      } else {
+        historyFab.classList.remove('hidden');
+      }
+    }
 
     function renderDrugs() {
       grid.innerHTML = '';
@@ -566,7 +598,7 @@
           render();
         });
 
-        // Color picker (moved to bottom later)
+        // Color picker
         const colorWrap = document.createElement('div');
         colorWrap.className = 'color-picker';
         const colorLabel = document.createElement('label');
@@ -643,18 +675,18 @@
           const opt = document.createElement('option');
           opt.value = u.value; opt.textContent = u.label; unitSelect.appendChild(opt);
         }
-        unitSelect.value = drug.lastUnit || 'mg'; // remember last used unit per drug
+        unitSelect.value = drug.lastUnit || 'mg';
 
         const addBtn = document.createElement('button');
         addBtn.className = 'add-btn';
         addBtn.textContent = 'Add';
-        addBtn.addEventListener('click', () => { addEntryStandard(drug.id, drug.name, numInput, unitSelect, drug.color); });
+        addBtn.addEventListener('click', () => { addEntry(drug.id, drug.name, numInput, unitSelect, drug.color); });
 
         doseRow.appendChild(numInput);
         doseRow.appendChild(unitSelect);
         doseRow.appendChild(addBtn);
 
-        // Meta row: Total + Last Dose (side-by-side)
+        // Meta row: Total + Last Dose
         const meta = document.createElement('div');
         meta.className = 'meta';
         meta.id = `meta-${drug.id}`;
@@ -667,7 +699,7 @@
         meta.appendChild(totalSpan);
         meta.appendChild(lastSpan);
 
-        // Assemble card (color picker moved to bottom, below meta)
+        // Assemble card
         card.appendChild(nameRow);
         card.appendChild(doseRow);
         card.appendChild(meta);
@@ -685,14 +717,13 @@
       });
     }
 
-    document.addEventListener('click', () => { $$('.color-picker.open').forEach(el => el.classList.remove('open')); });
+    document.addEventListener('click', () => { $('.color-picker.open').forEach(el => el.classList.remove('open')); });
 
     function renderLog() {
       const entries = [...state.entries].sort((a,b) => b.ts - a.ts);
       logBody.innerHTML = '';
       if (!entries.length) {
         logBody.innerHTML = '<tr class="empty-row"><td colspan="5">No entries yet — add a dosage above to get started.</td></tr>';
-        // ensure totals + last dose clear when no entries
         state.drugs.forEach(d => {
           const totalEl = document.getElementById(`meta-total-${d.id}`);
           if (totalEl) totalEl.textContent = totalsForDrugLabel(d.id);
@@ -702,7 +733,7 @@
         return;
       }
 
-      // running totals across ALL days (for the log table's Total column)
+      // Calculate running totals
       const totalsByEntryGlobal = new Map();
       const sumsByNameGlobal = new Map();
       const ascAll = [...state.entries].sort((a,b)=> a.ts - b.ts || (a.id > b.id ? 1 : -1));
@@ -735,8 +766,13 @@
         for (const e of desc) {
           const tr = document.createElement('tr');
           tr.dataset.entryId = e.id;
+          
+          // Add editing class for mobile scroll
+          if (editingId === e.id) {
+            tr.classList.add('editing');
+          }
 
-          // Drug cell with subtle color chip background
+          // Drug cell with color chip
           const tdDrug = document.createElement('td');
           const chip = document.createElement('span');
           chip.className = 'drug-chip';
@@ -773,15 +809,38 @@
             for (const u of UNIT_OPTIONS) { const opt = document.createElement('option'); opt.value = u.value; opt.textContent = u.label; unitSelect.appendChild(opt); }
             unitSelect.value = e.unitRaw || e.unit || 'mg';
 
+            // Improved time editing with separate time and date controls
+            const timeContainer = document.createElement('div');
+            timeContainer.className = 'time-edit-container';
+            
             const timeInput = document.createElement('input');
-            timeInput.type = 'datetime-local';
+            timeInput.type = 'time';
             timeInput.id = `edit-time-${e.id}`;
-            timeInput.value = formatAsDatetimeLocal(e.ts);
+            timeInput.value = formatAsTime(e.ts);
+            
+            const dateInput = document.createElement('input');
+            dateInput.type = 'date';
+            dateInput.id = `edit-date-${e.id}`;
+            dateInput.value = formatAsDate(e.ts);
+            dateInput.style.display = 'none';
+            
+            const dateToggle = document.createElement('button');
+            dateToggle.type = 'button';
+            dateToggle.className = 'date-toggle';
+            dateToggle.textContent = 'Edit Date';
+            dateToggle.addEventListener('click', (ev) => {
+              ev.preventDefault();
+              const isShown = dateInput.style.display !== 'none';
+              dateInput.style.display = isShown ? 'none' : 'block';
+              dateToggle.textContent = isShown ? 'Edit Date' : 'Hide Date';
+              dateToggle.classList.toggle('active', !isShown);
+            });
 
             const enterSave = (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); saveEdit(e.id); } };
             amountInput.addEventListener('keydown', enterSave);
             unitSelect.addEventListener('keydown', enterSave);
             timeInput.addEventListener('keydown', enterSave);
+            dateInput.addEventListener('keydown', enterSave);
 
             const amtWrap = document.createElement('div');
             amtWrap.style.display = 'grid';
@@ -790,7 +849,11 @@
             amtWrap.appendChild(amountInput);
             amtWrap.appendChild(unitSelect);
             tdDose.appendChild(amtWrap);
-            tdTimeCell.appendChild(timeInput);
+            
+            timeContainer.appendChild(timeInput);
+            timeContainer.appendChild(dateToggle);
+            timeContainer.appendChild(dateInput);
+            tdTimeCell.appendChild(timeContainer);
           } else {
             tdDose.textContent = e.dosageText;
             tdTimeCell.textContent = timeStr(e.ts);
@@ -802,7 +865,7 @@
           if (editingId === e.id) {
             const saveBtn = document.createElement('button');
             saveBtn.className = 'icon-btn';
-            saveBtn.textContent = '✔';
+            saveBtn.textContent = '✓';
             saveBtn.title = 'Save';
             saveBtn.dataset.action = 'save-edit';
             saveBtn.dataset.entryId = e.id;
@@ -844,7 +907,7 @@
         }
       }
 
-      // Update per-card totals (ALL TIME) without clobbering Last Dose
+      // Update totals
       state.drugs.forEach(d => {
         const totalEl = document.getElementById(`meta-total-${d.id}`);
         if (totalEl) totalEl.textContent = totalsForDrugLabel(d.id);
@@ -867,7 +930,7 @@
     function totalsForDrugLabel(drugId) {
       const units = new Map();
       for (const e of state.entries) {
-        if (e.drugId !== drugId) continue;            // ← key fix: compare IDs
+        if (e.drugId !== drugId) continue;
         if (e.value == null || !isFinite(e.value)) continue;
         const u = normalizeUnit(e.unit || '');
         units.set(u, (units.get(u) || 0) + e.value);
@@ -880,7 +943,7 @@
       return `Total: ${parts.join(' • ')}`;
     }
 
-    // --- Last Dose helpers ---
+    // Last Dose helpers
     function lastDoseDate(drugId) {
       let latest = null;
       for (const e of state.entries) {
@@ -893,10 +956,10 @@
     function formatSinceLabel(date) {
       if (!date) return 'Last Dose: —';
       const now = new Date();
-      let diffMin = Math.floor((now - date) / 60000); // minutes
+      let diffMin = Math.floor((now - date) / 60000);
       const inFuture = diffMin < 0;
       if (inFuture) diffMin = Math.abs(diffMin);
-      if (diffMin < 1) return inFuture ? 'Last Dose: in &lt;1m' : 'Last Dose: just now';
+      if (diffMin < 1) return inFuture ? 'Last Dose: in <1m' : 'Last Dose: just now';
       if (diffMin < 60) return `Last Dose: ${diffMin}min ${inFuture ? '' : 'ago'}`.trim();
       const hours = Math.floor(diffMin / 60);
       const mins = diffMin % 60;
@@ -914,8 +977,8 @@
       });
     }
 
-    // --- Add entries (standard only) ---
-    function addEntryStandard(drugId, currentDrugName, numInput, unitSelect, colorAtEntry) {
+    // Add entry
+    function addEntry(drugId, currentDrugName, numInput, unitSelect, colorAtEntry) {
       const raw = numInput.value;
       const value = parseFloat(raw);
       if (!raw || !isFinite(value) || value <= 0) {
@@ -933,11 +996,9 @@
       const entry = { id: uid('e'), ts, drugId, drugNameAtEntry: currentDrugName, dosageText, value, unit: unitNorm, unitRaw };
       state.entries.push(entry);
 
-      // Remember last unit per drug
       const drug = state.drugs.find(d => d.id === drugId);
       if (drug) { drug.lastUnit = unitRaw; }
 
-      // History
       state.history.push({ id: entry.id, ts: entry.ts, drugNameAtEntry: entry.drugNameAtEntry, dosageText, value, unit: unitNorm, colorAtEntry, addedAt: new Date(), removed: false, removedAt: null });
       saveState();
       numInput.value = '';
@@ -945,7 +1006,13 @@
       numInput.focus();
     }
 
-    function removeDrug(drugId) { const idx = state.drugs.findIndex(d => d.id === drugId); if (idx < 0) return; state.drugs.splice(idx, 1); saveState(); render(); }
+    function removeDrug(drugId) { 
+      const idx = state.drugs.findIndex(d => d.id === drugId); 
+      if (idx < 0) return; 
+      state.drugs.splice(idx, 1); 
+      saveState(); 
+      render(); 
+    }
 
     function removeEntry(entryId) {
       const idx = state.entries.findIndex(e => e.id === entryId);
@@ -957,14 +1024,20 @@
       render();
     }
 
-    function startEdit(entryId) { editingId = entryId; render(); const inp = document.getElementById(`edit-num-${entryId}`); if (inp) inp.focus(); }
+    function startEdit(entryId) { 
+      editingId = entryId; 
+      render(); 
+      const inp = document.getElementById(`edit-num-${entryId}`); 
+      if (inp) inp.focus(); 
+    }
 
     function saveEdit(entryId) {
       const amountEl = document.getElementById(`edit-num-${entryId}`);
       const unitEl = document.getElementById(`edit-unit-${entryId}`);
       const timeEl = document.getElementById(`edit-time-${entryId}`);
+      const dateEl = document.getElementById(`edit-date-${entryId}`);
       const e = state.entries.find(x => x.id === entryId);
-      if (!e || !amountEl || !unitEl || !timeEl) return;
+      if (!e || !amountEl || !unitEl || !timeEl || !dateEl) return;
 
       const amountRaw = amountEl.value;
       const value = parseFloat(amountRaw);
@@ -977,13 +1050,17 @@
       }
       const unitRaw = unitEl.value;
 
+      // Combine date and time
+      const dateValue = dateEl.value || formatAsDate(e.ts);
+      const timeValue = timeEl.value || formatAsTime(e.ts);
+      const newDateTime = new Date(`${dateValue}T${timeValue}`);
+
       e.value = value;
       e.unit = normalizeUnit(unitRaw);
       e.unitRaw = unitRaw;
       e.dosageText = displayValueUnit(value, unitRaw);
-      if (timeEl.value) e.ts = new Date(timeEl.value);
+      e.ts = newDateTime;
 
-      // update last unit on the live drug as well
       const d = state.drugs.find(d => d.id === e.drugId);
       if (d) d.lastUnit = unitRaw;
 
@@ -994,9 +1071,7 @@
 
     function cancelEdit() { editingId = null; render(); }
 
-    let editingId = null; // entry currently being edited
-
-    // --- Event delegation ---
+    // Event delegation
     document.addEventListener('click', async (e) => {
       if (e.target && e.target.id === 'clear-log') {
         if (!state.entries.length) return;
@@ -1012,7 +1087,10 @@
       }
 
       if (e.target && e.target.id === 'add-med') {
-        let i = state.drugs.length + 1; let base = 'Drug '; let candidate = base + i; const names = new Set(state.drugs.map(d => nameKey(d.name)));
+        let i = state.drugs.length + 1; 
+        let base = 'Drug '; 
+        let candidate = base + i; 
+        const names = new Set(state.drugs.map(d => nameKey(d.name)));
         while (names.has(nameKey(candidate))) { i++; candidate = base + i; }
         const color = palette[state.drugs.length % palette.length];
         state.drugs.push({ id: uid('drug'), name: candidate, color });
@@ -1024,7 +1102,10 @@
       if (actionBtn) {
         const action = actionBtn.dataset.action;
         const id = actionBtn.dataset.entryId;
-        if (action === 'remove-entry') { const ok = await openConfirm('Are you sure you want to remove this entry?'); if (ok) { removeEntry(id); showToast('Entry removed.'); } }
+        if (action === 'remove-entry') { 
+          const ok = await openConfirm('Are you sure you want to remove this entry?'); 
+          if (ok) { removeEntry(id); showToast('Entry removed.'); } 
+        }
         if (action === 'edit-entry') startEdit(id);
         if (action === 'save-edit') saveEdit(id);
         if (action === 'cancel-edit') cancelEdit();
@@ -1051,7 +1132,7 @@
       }
     });
 
-    // Periodic updater for "Last Dose" (every minute)
+    // Periodic updater for "Last Dose"
     let lastDoseTicker = null;
     function ensureTicker() {
       if (lastDoseTicker) return;
