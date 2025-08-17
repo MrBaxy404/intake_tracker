@@ -785,43 +785,18 @@
             for (const u of UNIT_OPTIONS) { const opt = document.createElement('option'); opt.value = u.value; opt.textContent = u.label; unitSelect.appendChild(opt); }
             unitSelect.value = e.unitRaw || e.unit || 'mg';
 
-            // NEW: time-only editor by default, with optional date toggle
-            const timeWrap = document.createElement('div');
-            timeWrap.className = 'time-edit-wrap';
-
-            const timeInput = document.createElement('input');
-            timeInput.type = 'time';
-            timeInput.step = '60'; // minute precision
-            timeInput.id = `edit-time-${e.id}`;
-            timeInput.value = toTimeInputValue(e.ts);
-            timeInput.setAttribute('aria-label', 'Time');
-
-            const dateInput = document.createElement('input');
-            dateInput.type = 'date';
-            dateInput.id = `edit-date-${e.id}`;
-            dateInput.value = toDateInputValue(e.ts);
-            dateInput.hidden = true; // hidden until toggled
-
-            const toggleDateBtn = document.createElement('button');
-            toggleDateBtn.type = 'button';
-            toggleDateBtn.className = 'btn btn-ghost';
-            toggleDateBtn.style.padding = '6px 8px';
-            toggleDateBtn.style.fontSize = '12px';
-            toggleDateBtn.textContent = 'Edit date';
-            toggleDateBtn.addEventListener('click', () => {
-              dateInput.hidden = !dateInput.hidden;
-              toggleDateBtn.textContent = dateInput.hidden ? 'Edit date' : 'Hide date';
-            });
-
-            timeWrap.appendChild(timeInput);
-            timeWrap.appendChild(toggleDateBtn);
-            timeWrap.appendChild(dateInput);
+            // RESTORED: single datetime-local editor (old behavior)
+            const dtInput = document.createElement('input');
+            dtInput.type = 'datetime-local';
+            dtInput.id = `edit-datetime-${e.id}`;
+            dtInput.className = 'edit-input';
+            dtInput.value = formatAsDatetimeLocal(e.ts);
+            dtInput.setAttribute('aria-label', 'Date & time');
 
             const enterSave = (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); saveEdit(e.id); } };
             amountInput.addEventListener('keydown', enterSave);
             unitSelect.addEventListener('keydown', enterSave);
-            timeInput.addEventListener('keydown', enterSave);
-            dateInput.addEventListener('keydown', enterSave);
+            dtInput.addEventListener('keydown', enterSave);
 
             const amtWrap = document.createElement('div');
             amtWrap.style.display = 'grid';
@@ -830,7 +805,7 @@
             amtWrap.appendChild(amountInput);
             amtWrap.appendChild(unitSelect);
             tdDose.appendChild(amtWrap);
-            tdTimeCell.appendChild(timeWrap);
+            tdTimeCell.appendChild(dtInput);
           } else {
             tdDose.textContent = e.dosageText;
             tdTimeCell.textContent = timeStr(e.ts);
@@ -1000,10 +975,9 @@
     function saveEdit(entryId) {
       const amountEl = document.getElementById(`edit-num-${entryId}`);
       const unitEl = document.getElementById(`edit-unit-${entryId}`);
-      const timeEl = document.getElementById(`edit-time-${entryId}`);
-      const dateEl = document.getElementById(`edit-date-${entryId}`);
+      const dtEl = document.getElementById(`edit-datetime-${entryId}`);
       const e = state.entries.find(x => x.id === entryId);
-      if (!e || !amountEl || !unitEl || !timeEl) return;
+      if (!e || !amountEl || !unitEl || !dtEl) return;
 
       const amountRaw = amountEl.value;
       const value = parseFloat(amountRaw);
@@ -1016,15 +990,18 @@
       }
       const unitRaw = unitEl.value;
 
-      // Build new timestamp based on edited time (+ optional date)
+      // Build new timestamp from a single datetime-local input
       let newDate = new Date(e.ts);
-      if (dateEl && !dateEl.hidden && dateEl.value) {
-        const [Y,M,D] = dateEl.value.split('-').map(Number);
-        if (Y && M && D) newDate = new Date(Y, M-1, D, newDate.getHours(), newDate.getMinutes(), 0, 0);
-      }
-      if (timeEl.value) {
-        const [hh, mm] = timeEl.value.split(':').map(Number);
-        if (!isNaN(hh) && !isNaN(mm)) newDate.setHours(hh, mm, 0, 0);
+      if (dtEl && dtEl.value) {
+        const v = dtEl.value; // expected YYYY-MM-DDTHH:MM
+        const [datePart, timePart] = v.split('T');
+        if (datePart && timePart) {
+          const [Y, M, D] = datePart.split('-').map(Number);
+          const [hh, mm] = timePart.split(':').map(Number);
+          if (Y && M && D && !isNaN(hh) && !isNaN(mm)) {
+            newDate = new Date(Y, M - 1, D, hh, mm, 0, 0);
+          }
+        }
       }
 
       e.value = value;
