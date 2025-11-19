@@ -619,11 +619,11 @@
         card.className = `card ${drug.expanded ? '' : 'collapsed'}`;
         card.dataset.id = drug.id;
         card.onclick = (e) => {
-           // Prevent collapsing if clicking inputs/buttons/menu
-           if (e.target.closest('input, select, button, .color-picker')) return;
+           // Prevent collapsing if clicking inputs, buttons, menus, OR the name field
+           if (e.target.closest('input, select, button, .color-picker, .name')) return;
            drug.expanded = !drug.expanded;
            saveState();
-           renderDrugs(); // Re-render only drugs to update classes
+           renderDrugs(); 
         };
 
         const strip = document.createElement('div');
@@ -741,19 +741,10 @@
         doseRow.className = 'dose-grid';
 
         const numInput = document.createElement('input');
-        // Mobile Keyboard Fixes
         numInput.type = 'number';
-        numInput.setAttribute('inputmode', 'decimal');
-        numInput.setAttribute('pattern', '[0-9]*'); 
-        // Force disable autocomplete and ignore password managers
-        numInput.setAttribute('autocomplete', 'new-password'); 
-        numInput.setAttribute('data-lpignore', 'true'); // LastPass
-        numInput.setAttribute('data-1p-ignore', 'true'); // 1Password
-        numInput.name = 'input_qty_' + Math.random().toString(36).slice(2); // Random name
         numInput.step = 'any';
-        numInput.placeholder = 'Amount';
-        numInput.min = '0';
-        numInput.setAttribute('enterkeyhint', 'done');
+        numInput.setAttribute('inputmode', 'decimal'); // Triggers numeric pad on mobile
+        numInput.setAttribute('autocomplete', 'off');   // Standard disable
 
         const unitSelect = document.createElement('select');
         for (const u of UNIT_OPTIONS) {
