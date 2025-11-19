@@ -60,7 +60,7 @@
     /* Toolbar & Reset Button */
     .toolbar { 
       display: flex; 
-      justify-content: space-between; /* Pushes buttons to edges */
+      justify-content: space-between;
       gap: 12px; 
       margin-bottom: 16px; 
       align-items: center; 
@@ -75,9 +75,9 @@
     .toolbar button:hover, .reset-all-btn:hover { background: rgba(255,255,255,0.12); }
 
     .reset-all-btn {
-      background: rgba(239, 68, 68, 0.2); /* Stronger red background */
+      background: rgba(239, 68, 68, 0.2);
       color: #fca5a5;
-      border: 1px solid rgba(239, 68, 68, 0.5); /* Stronger border */
+      border: 1px solid rgba(239, 68, 68, 0.5);
     }
     .reset-all-btn:hover { background: rgba(239, 68, 68, 0.35); }
 
@@ -109,19 +109,27 @@
     .card.collapsed .card-header { padding-bottom: 18px; }
     .card:not(.collapsed) .card-header { padding-bottom: 4px; }
 
-    .card-top-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+    .card-top-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 
-    .name { 
+    /* Updated Name Input Styling */
+    input.name { 
       font-size: 16px; font-weight: 800; letter-spacing: .4px; 
-      padding: 2px 6px; border-radius: 8px; outline: none; 
+      padding: 4px 0; border-radius: 4px; 
       margin: 0; flex: 1; min-width: 0;
+      background: transparent; border: none; color: var(--text);
+      font-family: inherit;
     }
-    .name[contenteditable="true"]:focus { box-shadow: 0 0 0 4px rgba(79, 124, 255, 0.25); background: rgba(255,255,255,0.06); cursor: text; }
-    .name.invalid { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.35) !important; }
-    .name-error { color: var(--danger); font-size: 12px; margin: 0 0 6px 18px; display: none; }
+    input.name:focus { 
+      outline: none; 
+      background: rgba(255,255,255,0.06); 
+      box-shadow: 0 0 0 4px rgba(79, 124, 255, 0.25);
+      border-radius: 6px;
+    }
+    input.name.invalid { color: var(--danger); }
+    .name-error { color: var(--danger); font-size: 12px; margin: 0 0 6px 0; display: none; }
 
     /* Card Actions */
-    .card-actions { display: flex; gap: 6px; align-items: center; }
+    .card-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
 
     .btn-sm {
       padding: 4px 8px; font-size: 12px; border-radius: 8px; 
@@ -167,7 +175,7 @@
     button.add-btn:hover { background: rgba(79, 124, 255, 0.25); }
     button.add-btn:active { transform: translateY(1px); }
 
-    .meta { font-size: 12px; color: var(--muted); min-height: 18px; display: flex; flex-direction: column; gap: 2px; pointer-events: none; }
+    .meta { font-size: 12px; color: var(--muted); min-height: 18px; display: flex; flex-direction: column; gap: 2px; pointer-events: none; margin-top: 8px; }
 
     .log { margin-top: 26px; background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%); border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
     .log-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); }
@@ -248,15 +256,14 @@
       .log-header { padding: 12px; }
       .log { overflow-x: hidden; }
       
-      /* Mobile Table Adjustments: wrap text, no fixed widths, ensure visibility */
       table { width: 100%; table-layout: auto; }
       thead th { white-space: normal; padding: 8px; }
       tbody td { padding: 10px 8px; }
       
-      thead th:nth-child(1), tbody td:nth-child(1) { width: auto; } /* Drug */
-      thead th:nth-child(2), tbody td:nth-child(2) { width: auto; } /* Dose */
-      thead th:nth-child(3), tbody td:nth-child(3) { width: auto; } /* Time */
-      thead th:nth-child(4), tbody td:nth-child(4) { width: auto; text-align: right; } /* Actions */
+      thead th:nth-child(1), tbody td:nth-child(1) { width: auto; }
+      thead th:nth-child(2), tbody td:nth-child(2) { width: auto; }
+      thead th:nth-child(3), tbody td:nth-child(3) { width: auto; }
+      thead th:nth-child(4), tbody td:nth-child(4) { width: auto; text-align: right; }
 
       tbody td:nth-child(2) { white-space: normal; word-break: normal; overflow-wrap: anywhere; }
       tbody td:nth-child(1) .drug-chip { display: inline-flex; max-width: 100%; white-space: normal; }
@@ -273,7 +280,6 @@
         <h1>Drug Tracker</h1>
         <p>Track drug dosage and timing easily on any device.<a href="#" id="privacy-open" class="inline-link" aria-haspopup="dialog" aria-controls="privacy" role="button">Privacy Information</a></p>
       </div>
-      <!-- Reset button moved to toolbar -->
     </header>
 
     <div class="toolbar">
@@ -306,7 +312,6 @@
     </section>
   </div>
 
-  <!-- Floating History Button (Bottom Left) -->
   <button id="open-history" class="history-fab" title="View history (includes removed)">
     View History
   </button>
@@ -364,11 +369,6 @@
     // --- Utilities ---
     const $ = (sel, root=document) => root.querySelector(sel);
     const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
-
-    function deepClone(obj) {
-      if (typeof structuredClone === 'function') return structuredClone(obj);
-      return JSON.parse(JSON.stringify(obj));
-    }
 
     function timeStr(d) {
       if (!d || isNaN(d)) return '—';
@@ -457,7 +457,7 @@
     function loadState() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return deepClone(initialState);
+        if (!raw) return structuredClone(initialState);
         const parsed = JSON.parse(raw);
         parsed.entries?.forEach(e => e.ts = new Date(e.ts));
         parsed.history?.forEach(h => { h.ts = new Date(h.ts); if (h.addedAt) h.addedAt = new Date(h.addedAt); if (h.removedAt) h.removedAt = new Date(h.removedAt); });
@@ -471,14 +471,13 @@
         return parsed;
       } catch (e) {
         console.error('State load failed, resetting:', e);
-        return deepClone(initialState);
+        return structuredClone(initialState);
       }
     }
 
     let state = loadState();
     function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {} }
 
-    // --- Global "Last Dose" Helper for Sorting & Repeat ---
     function lastDoseDate(drugId) {
       let latest = null;
       for (const e of state.entries) {
@@ -544,7 +543,7 @@
     $('#reset-all').addEventListener('click', async () => {
       const ok = await openConfirm('This will delete ALL drugs, history, and logs. Proceed?');
       if (ok) {
-        state = deepClone(initialState);
+        state = structuredClone(initialState);
         saveState();
         render();
         showToast('Everything reset.');
@@ -620,7 +619,7 @@
         card.dataset.id = drug.id;
         card.onclick = (e) => {
            // Prevent collapsing if clicking inputs, buttons, menus, OR the name field
-           if (e.target.closest('input, select, button, .color-picker, .name')) return;
+           if (e.target.closest('input, select, button, .color-picker')) return;
            drug.expanded = !drug.expanded;
            saveState();
            renderDrugs(); 
@@ -638,13 +637,14 @@
         const topRow = document.createElement('div');
         topRow.className = 'card-top-row';
 
-        const nameEl = document.createElement('h2');
-        nameEl.className = 'name';
-        nameEl.contentEditable = 'true';
-        nameEl.spellcheck = false;
-        nameEl.textContent = drug.name;
-        nameEl.dataset.prev = drug.name;
-        nameEl.setAttribute('enterkeyhint', 'done');
+        // REPLACED h2 with input for better mobile support
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.className = 'name';
+        nameInput.value = drug.name;
+        nameInput.dataset.prev = drug.name;
+        nameInput.setAttribute('enterkeyhint', 'done');
+        nameInput.setAttribute('aria-label', 'Drug Name');
 
         const actionsDiv = document.createElement('div');
         actionsDiv.className = 'card-actions';
@@ -654,7 +654,7 @@
         if (lastEntry) {
           const repeatBtn = document.createElement('button');
           repeatBtn.className = 'btn-sm repeat-btn';
-          repeatBtn.textContent = `Repeat Last Dose`; // Changed text
+          repeatBtn.textContent = `Repeat Last Dose`;
           repeatBtn.title = `Add ${displayValueUnit(lastEntry.value, lastEntry.unit)} (same as last)`;
           repeatBtn.onclick = (e) => {
             e.stopPropagation();
@@ -674,10 +674,9 @@
         };
         actionsDiv.appendChild(removeBtn);
 
-        topRow.appendChild(nameEl);
+        topRow.appendChild(nameInput);
         topRow.appendChild(actionsDiv);
         
-        // Meta info (Last dose)
         const meta = document.createElement('div');
         meta.className = 'meta';
         meta.id = `meta-${drug.id}`;
@@ -695,35 +694,38 @@
         nameErr.textContent = 'Name already exists.';
 
         headerDiv.appendChild(topRow);
-        headerDiv.appendChild(meta);
         headerDiv.appendChild(nameErr);
+        headerDiv.appendChild(meta);
         card.appendChild(headerDiv);
 
         // Name Editing Logic
-        nameEl.addEventListener('focus', () => { nameEl.dataset.prev = drug.name; });
-        nameEl.addEventListener('keydown', (e) => { 
+        nameInput.addEventListener('click', (e) => { e.stopPropagation(); }); // Prevent collapse
+        nameInput.addEventListener('focus', () => { 
+            nameInput.dataset.prev = drug.name;
+            nameInput.select(); // Auto-select all text for easy overwrite
+        });
+        nameInput.addEventListener('keydown', (e) => { 
             if (e.key === 'Enter') { 
               e.preventDefault(); 
-              nameEl.blur(); 
-              // Immediately focus the amount input
+              nameInput.blur(); 
               const input = card.querySelector('input[type="number"]');
               if (input) input.focus();
             }
         });
-        nameEl.addEventListener('input', () => {
-          const proposed = nameEl.textContent.trim();
+        nameInput.addEventListener('input', () => {
+          const proposed = nameInput.value.trim();
           const dup = state.drugs.some(d => d.id !== drug.id && nameKey(d.name) === nameKey(proposed));
-          if (dup) { nameEl.classList.add('invalid'); nameErr.style.display = 'block'; }
-          else { nameEl.classList.remove('invalid'); nameErr.style.display = 'none'; }
+          if (dup) { nameInput.classList.add('invalid'); nameErr.style.display = 'block'; }
+          else { nameInput.classList.remove('invalid'); nameErr.style.display = 'none'; }
         });
-        nameEl.addEventListener('blur', () => {
-          const proposed = nameEl.textContent.trim();
-          const prev = nameEl.dataset.prev || drug.name;
+        nameInput.addEventListener('blur', () => {
+          const proposed = nameInput.value.trim();
+          const prev = nameInput.dataset.prev || drug.name;
           const isEmpty = proposed.length === 0;
           const dup = state.drugs.some(d => d.id !== drug.id && nameKey(d.name) === nameKey(proposed));
           if (isEmpty || dup) {
-            nameEl.textContent = prev;
-            nameEl.classList.remove('invalid');
+            nameInput.value = prev;
+            nameInput.classList.remove('invalid');
             nameErr.style.display = dup ? 'block' : 'none';
             setTimeout(() => { nameErr.style.display = 'none'; }, 2000);
             return;
@@ -744,7 +746,7 @@
         numInput.type = 'number';
         numInput.step = 'any';
         numInput.setAttribute('inputmode', 'decimal'); // Triggers numeric pad on mobile
-        numInput.setAttribute('autocomplete', 'off');   // Standard disable
+        numInput.setAttribute('autocomplete', 'off');
 
         const unitSelect = document.createElement('select');
         for (const u of UNIT_OPTIONS) {
@@ -879,7 +881,7 @@
             amountInput.id = `edit-num-${e.id}`;
             amountInput.value = (e.value != null && isFinite(e.value)) ? e.value : '';
             amountInput.setAttribute('inputmode', 'decimal');
-            amountInput.setAttribute('pattern', '[0-9]*'); // Mobile fix
+            amountInput.setAttribute('pattern', '[0-9]*');
             amountInput.setAttribute('enterkeyhint', 'done');
 
             const unitSelect = document.createElement('select');
@@ -888,7 +890,7 @@
             unitSelect.value = e.unitRaw || e.unit || 'mg';
 
             const dtInput = document.createElement('input');
-            dtInput.type = 'time'; // CHANGED TO TIME
+            dtInput.type = 'time';
             dtInput.id = `edit-time-${e.id}`;
             dtInput.className = 'edit-input';
             dtInput.value = formatAsTime(e.ts);
@@ -1147,22 +1149,19 @@
         while (names.has(nameKey(candidate))) { i++; candidate = base + i; }
         const color = palette[state.drugs.length % palette.length];
         const newId = uid('drug');
-        state.drugs.push({ id: newId, name: candidate, color, expanded: true }); // Start expanded
+        state.drugs.push({ id: newId, name: candidate, color, expanded: true });
         saveState();
         render();
         
-        // Focus Logic for Mobile
+        // Enhanced focus logic for input
         setTimeout(() => {
           const card = document.querySelector(`[data-id="${newId}"]`);
           if (card) {
              const nameInput = card.querySelector('.name');
              if (nameInput) {
                  nameInput.focus();
-                 const range = document.createRange();
-                 range.selectNodeContents(nameInput);
-                 const sel = window.getSelection();
-                 sel.removeAllRanges();
-                 sel.addRange(range);
+                 nameInput.select();
+                 nameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
              }
           }
         }, 50);
@@ -1199,12 +1198,7 @@
 
     setInterval(updateLastDoseLabels, 60000);
 
-    // Initial render with safety catch
-    try {
-      render();
-    } catch(e) {
-      console.error("Initial render failed", e);
-    }
+    try { render(); } catch(e) { console.error("Initial render failed", e); }
   </script>
 </body>
 </html>
