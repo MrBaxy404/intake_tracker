@@ -39,17 +39,27 @@
                   var(--bg);
     }
 
-    .container { max-width: 1100px; margin: 40px auto; padding: 24px; }
+    .container { max-width: 1100px; margin: 40px auto; padding: 24px; position: relative; }
 
+    header { position: relative; padding-right: 140px; /* space for reset btn */ margin-bottom: 20px; }
     header h1 { font-size: clamp(22px, 3vw, 32px); margin: 0 0 6px; letter-spacing: 0.3px; }
-    header p { margin: 0 0 18px; color: var(--muted); }
+    header p { margin: 0; color: var(--muted); }
+
+    /* Reset Button (Top Right) */
+    .reset-all-btn {
+      position: absolute; top: 0; right: 0;
+      padding: 8px 12px; font-size: 13px; font-weight: 600;
+      background: rgba(239, 68, 68, 0.15); color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 10px;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .reset-all-btn:hover { background: rgba(239, 68, 68, 0.25); }
 
     .inline-link {
       background: transparent; border: 0; padding: 0; margin-left: 6px; color: var(--muted);
       text-decoration: underline; font-weight: 500; cursor: pointer;
     }
     .inline-link:hover { text-decoration: none; }
-    .inline-link:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; border-radius: 2px; }
 
     .toolbar { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
     .toolbar button { padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); cursor: pointer; }
@@ -81,7 +91,7 @@
     .name-row { display: flex; align-items: center; gap: 8px; }
     .name-error { color: var(--danger); font-size: 12px; margin: 0 0 6px 0; display: none; }
 
-    /* Color picker (custom dropdown) */
+    /* Color picker */
     .color-picker { position: relative; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .color-picker label { font-size: 12px; color: var(--muted); }
     .color-select-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); cursor: pointer; }
@@ -93,8 +103,6 @@
     .color-option:hover { background: rgba(255,255,255,0.10); }
     .color-option .swatch { width: 14px; height: 14px; border-radius: 999px; background: var(--swatch); box-shadow: 0 0 0 1px rgba(255,255,255,0.2) inset; }
     .color-option .label { font-size: 14px; }
-
-    .input-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
 
     input[type="text"], input[type="datetime-local"], input[type="number"], select { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); outline: none; transition: border-color .15s ease, background .15s ease, box-shadow .15s ease; }
     input[type="text"]::placeholder { color: #9aa4d3; }
@@ -127,20 +135,15 @@
     .date-row td { background: rgba(255,255,255,0.04); color: var(--accent-2); font-weight: 700; letter-spacing: .3px; }
 
     .row-actions { white-space: nowrap; text-align: right; }
-    .icon-btn { border: none; background: transparent; color: var(--muted); cursor: pointer; font-size: 16px; line-height: 1; padding: 4px 6px; }
+    .icon-btn { border: none; background: transparent; color: var(--muted); cursor: pointer; font-size: 16px; line-height: 1; padding: 4px 6px; min-width: 32px; min-height: 32px; display: inline-flex; align-items: center; justify-content: center; }
     .icon-btn:hover { color: var(--text); }
     .icon-danger:hover { color: var(--danger); }
 
-    /* OLD pill (kept for History view) */
     .drug-pill {
       display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05);
-      max-width: 100%;
+      border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05); max-width: 100%;
     }
     .drug-pill .color-dot { width: 10px; height: 10px; border-radius: 999px; display: inline-block; }
-    .drug-pill .name-text { white-space: normal; overflow-wrap: anywhere; }
-
-    /* NEW subtle color chip for the log's Drug column */
     .drug-chip { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 999px; font-weight: 600; max-width: 100%; white-space: normal; overflow: visible; text-overflow: clip; border: 1px solid rgba(255,255,255,0.12); flex-wrap: wrap; }
     .drug-chip > span:not(.dot) { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
     .drug-chip .dot { width: 10px; height: 10px; border-radius: 999px; flex: 0 0 10px; background: var(--dot, #8ea8ff); box-shadow: 0 0 0 1px rgba(0,0,0,0.15) inset; }
@@ -153,7 +156,6 @@
       border-radius: 12px; padding: 10px 14px; box-shadow: var(--shadow);
       display: none; gap: 12px; align-items: center; z-index: 1000; }
     .snackbar.show { display: inline-flex; }
-    .snackbar .msg { font-size: 14px; color: var(--muted); }
 
     /* Confirmation Modal */
     .modal-overlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(6, 10, 30, 0.6); backdrop-filter: blur(2px); z-index: 1100; animation: fadeIn .15s ease forwards; }
@@ -174,8 +176,8 @@
     .btn-danger:hover { background: rgba(239,68,68,0.25); }
     .btn-ghost { background: transparent; border-color: rgba(255,255,255,0.15); }
 
-    /* History Floating Button */
-    .history-fab { position: fixed; right: 16px; bottom: calc(16px + var(--safe-bottom)); min-width: 48px; height: 48px; padding: 0 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.08); color: var(--text); box-shadow: var(--shadow); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1050; font-weight: 700; }
+    /* History Floating Button - MOVED TO LEFT */
+    .history-fab { position: fixed; left: 16px; bottom: calc(16px + var(--safe-bottom)); min-width: 48px; height: 48px; padding: 0 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.08); color: var(--text); box-shadow: var(--shadow); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1050; font-weight: 700; }
     .history-fab:hover { background: rgba(255,255,255,0.14); }
 
     /* History modal styles */
@@ -189,15 +191,16 @@
     @media (max-width: 960px) { .grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 720px) {
       .container { padding: 16px; margin: 20px auto; }
+      header { padding-right: 0; display: flex; flex-direction: column; gap: 10px; }
+      .reset-all-btn { position: static; width: fit-content; align-self: flex-start; }
       .grid { grid-template-columns: 1fr; gap: 12px; }
       .dose-grid { grid-template-columns: 1fr 120px auto; }
       .toolbar button { padding: 12px 14px; }
       .log-header { padding: 12px; }
-
       .log { overflow-x: hidden; }
       table { table-layout: fixed; width: 100%; }
       thead th { white-space: nowrap; }
-      /* Column widths tuned for small phones */
+      /* Column widths */
       thead th:nth-child(1), tbody td:nth-child(1) { width: 28%; }
       thead th:nth-child(2), tbody td:nth-child(2) { width: 16%; }
       thead th:nth-child(3), tbody td:nth-child(3) { width: 16%; }
@@ -206,22 +209,20 @@
       tbody td:nth-child(2), tbody td:nth-child(3) { white-space: normal; word-break: normal; overflow-wrap: anywhere; }
       tbody td:nth-child(1) .drug-chip { display: inline-flex; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       thead th, tbody td { padding: 8px 10px; }
-
-      /* NEW: editing mode improvements */
       body.editing .log { overflow-x: auto; -webkit-overflow-scrolling: touch; }
       body.editing table { min-width: 720px; }
       body.editing #open-history { display: none !important; }
-      .time-edit-wrap { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-      .time-edit-wrap input[type="time"] { min-width: 110px; }
-      .time-edit-wrap input[type="date"] { min-width: 150px; }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>Drug Tracker</h1>
-      <p>Track drug dosage and timing easily on any device.<a href="#" id="privacy-open" class="inline-link" aria-haspopup="dialog" aria-controls="privacy" role="button">Privacy Information</a></p>
+      <div>
+        <h1>Drug Tracker</h1>
+        <p>Track drug dosage and timing easily on any device.<a href="#" id="privacy-open" class="inline-link" aria-haspopup="dialog" aria-controls="privacy" role="button">Privacy Information</a></p>
+      </div>
+      <button id="reset-all" class="reset-all-btn" title="Clear drugs, entries, and history">Reset Everything</button>
     </header>
 
     <div class="toolbar">
@@ -234,10 +235,10 @@
       <div class="log-header">
         <h3>Total Drug Intake</h3>
         <div class="controls">
-          <button id="clear-log" title="Clear all entries">Clear All</button>
+          <button id="clear-log" title="Clear all entries">Clear Entries</button>
         </div>
       </div>
-      <table aria-describedby="A table of recorded drug intakes grouped by date. Columns: Drug, Total, Doses, Time.">
+      <table aria-describedby="Log of drug intake">
         <thead>
           <tr>
             <th scope="col">Drug</th>
@@ -248,20 +249,20 @@
           </tr>
         </thead>
         <tbody id="log-body">
-          <tr class="empty-row"><td colspan="5">No entries yet — add a dosage above to get started.</td></tr>
+          <tr class="empty-row"><td colspan="5">No entries yet.</td></tr>
         </tbody>
       </table>
     </section>
   </div>
 
-  <!-- Floating History Button -->
+  <!-- Floating History Button (Bottom Left) -->
   <button id="open-history" class="history-fab" title="View history (includes removed)">
     View History
   </button>
 
   <!-- Snackbar -->
   <div id="snackbar" class="snackbar" role="status" aria-live="polite">
-    <span class="msg" id="snackbar-msg">Removed.</span>
+    <span class="msg" id="snackbar-msg">Action completed.</span>
   </div>
 
   <!-- Confirmation Modal -->
@@ -286,7 +287,7 @@
           <button class="btn btn-danger" id="history-clear">Clear History</button>
         </div>
       </div>
-      <p>Shows all intakes, including those that were removed.</p>
+      <p style="margin-top:8px;">Shows all intakes, including removed ones.</p>
       <div id="history-list" class="history-list"></div>
     </div>
   </div>
@@ -302,9 +303,8 @@
       </div>
       <div class="privacy-content">
         <p><em>Your data stays on your device.</em></p>
-        <p>Everything you enter is saved only in your browser’s local storage.</p>
-        <p>We do not send, upload, or store your entries anywhere else — not on a server, not in the cloud.</p>
-        <p>To remove your data, use “Clear All” or “Clear History,” or clear your browser’s storage for this site.</p>
+        <p>Everything is saved only in your browser’s local storage.</p>
+        <p>To remove your data, use “Reset Everything” or clear your browser’s cache.</p>
       </div>
     </div>
   </div>
@@ -314,17 +314,26 @@
     const $ = (sel, root=document) => root.querySelector(sel);
     const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
 
+    function deepClone(obj) {
+      // Safe cloning fallback
+      if (typeof structuredClone === 'function') return structuredClone(obj);
+      return JSON.parse(JSON.stringify(obj));
+    }
+
     function timeStr(d) {
+      if (!d || isNaN(d)) return '—';
       try { return new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(d); }
       catch { return d.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}); }
     }
 
     function dateLabel(d) {
-      try { return new Intl.DateTimeFormat(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: '2-digit' }).format(d); }
-      catch { return d.toDateString(); }
+      if (!d || isNaN(d)) return '—';
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${pad(d.getDate())}.${pad(d.getMonth()+1)}.`;
     }
 
     function dayKey(d) {
+      if (!d || isNaN(d)) return '1970-01-01';
       const y = d.getFullYear();
       const m = String(d.getMonth()+1).padStart(2,'0');
       const day = String(d.getDate()).padStart(2,'0');
@@ -339,25 +348,12 @@
     function uid(prefix='id') { return `${prefix}_${Math.random().toString(36).slice(2,9)}_${Date.now().toString(36)}`; }
 
     function formatAsDatetimeLocal(d) {
+      if (!d || isNaN(d)) return '';
       const pad = (n) => String(n).padStart(2, '0');
       return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
     }
 
-    // NEW: split date / time helpers for editing
-    function toDateInputValue(d) { const pad=(n)=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
-    function toTimeInputValue(d) { const pad=(n)=>String(n).padStart(2,'0'); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; }
-
-    // Canonical/normalized name key for grouping by drug name (case/space-insensitive)
     function nameKey(str) { return (str || '').toString().trim().toLowerCase(); }
-
-    // Determine readable text color (black/white) against a given hex background
-    function getContrastColor(hex) {
-      const v = (hex || '').replace('#','');
-      const r = parseInt(v.substring(0,2),16), g = parseInt(v.substring(2,4),16), b = parseInt(v.substring(4,6),16);
-      const toLin = (c) => { const s = c/255; return s <= 0.04045 ? s/12.92 : Math.pow((s+0.055)/1.055, 2.4); };
-      const L = 0.2126*toLin(r) + 0.7152*toLin(g) + 0.0722*toLin(b);
-      return L > 0.5 ? '#000' : '#fff';
-    }
 
     function hexToRgba(hex, a = 1) {
       const v = (hex || '').replace('#','');
@@ -367,7 +363,7 @@
       return `rgba(${r},${g},${b},${a})`;
     }
 
-    // --- Unit normalization & pluralization (slim) ---
+    // --- Unit normalization & pluralization ---
     function normalizeUnit(unitRaw) {
       if (!unitRaw) return '';
       const raw = unitRaw.trim();
@@ -375,7 +371,7 @@
       if (token === 'ml') return 'mL';
       if (token === 'l') return 'L';
       if (token === 'ug' || token === 'mcg' || token === 'µg') return 'µg';
-      return raw.toLowerCase(); // canonical
+      return raw.toLowerCase();
     }
 
     const PLURALS = { pill: ['pill', 'pills'], tab: ['tab', 'tabs'], line: ['line', 'lines'], drop: ['drop', 'drops'], unit: ['unit', 'units'] };
@@ -388,7 +384,6 @@
       return `${fmtNumber(value)} ${uCanon}`;
     }
 
-    // Units for dropdown
     const UNIT_OPTIONS = [
       { value: 'mg', label: 'mg' },
       { value: 'g', label: 'g' },
@@ -402,7 +397,6 @@
       { value: 'drop', label: 'drop' }
     ];
 
-    // Fixed 10-color palette across spectrum
     const palette = ['#ef4444','#f59e0b','#eab308','#84cc16','#22c55e','#10b981','#06b6d4','#3b82f6','#8b5cf6','#ec4899'];
     const paletteNames = ['Red','Orange','Yellow','Lime','Green','Teal','Cyan','Blue','Violet','Pink'];
 
@@ -413,7 +407,7 @@
     function loadState() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return structuredClone(initialState);
+        if (!raw) return deepClone(initialState);
         const parsed = JSON.parse(raw);
         parsed.entries?.forEach(e => e.ts = new Date(e.ts));
         parsed.history?.forEach(h => { h.ts = new Date(h.ts); if (h.addedAt) h.addedAt = new Date(h.addedAt); if (h.removedAt) h.removedAt = new Date(h.removedAt); });
@@ -422,13 +416,26 @@
         if (!Array.isArray(parsed.history)) parsed.history = [];
         parsed.drugs.forEach((d, i) => { if (!d.color) d.color = palette[i % palette.length]; });
         return parsed;
-      } catch { return structuredClone(initialState); }
+      } catch (e) {
+        console.error('State load failed, resetting:', e);
+        return deepClone(initialState);
+      }
     }
 
     let state = loadState();
     function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {} }
 
-    // Snackbar / toast
+    // --- Global "Last Dose" Helper for Sorting ---
+    function lastDoseDate(drugId) {
+      let latest = null;
+      for (const e of state.entries) {
+        if (e.drugId !== drugId) continue;
+        if (!latest || e.ts > latest) latest = e.ts;
+      }
+      return latest;
+    }
+
+    // --- UI Controls ---
     const snackbar = $('#snackbar');
     const snackbarMsg = $('#snackbar-msg');
     let undoTimer = null;
@@ -471,13 +478,24 @@
       }
     });
 
+    // Reset Everything Button
+    $('#reset-all').addEventListener('click', async () => {
+      const ok = await openConfirm('DANGER: This will delete ALL drugs, history, and logs. Proceed?');
+      if (ok) {
+        state = deepClone(initialState);
+        saveState();
+        render();
+        showToast('Everything reset.');
+      }
+    });
+
     // History modal
     const historyOverlay = $('#history');
     const historyListEl = $('#history-list');
     $('#open-history').addEventListener('click', () => openHistory());
     $('#history-close').addEventListener('click', () => closeHistory());
     $('#history-clear').addEventListener('click', async () => {
-      const ok = await openConfirm('Are you sure you want to clear the entire history? This cannot be undone.');
+      const ok = await openConfirm('Clear entire history? This cannot be undone.');
       if (ok) { state.history = []; saveState(); renderHistory(); closeHistory(); showToast('History cleared.'); }
     });
     function openHistory() { renderHistory(); historyOverlay.style.display = 'flex'; historyOverlay.classList.add('show'); $('#history-close').focus(); }
@@ -503,8 +521,9 @@
         pillBadge.appendChild(nameSpan);
 
         const info = document.createElement('div');
+        // Updated format: DD.MM., Time
         info.innerHTML = `<div style="font-weight:600;">${item.dosageText || '—'}</div>
-                          <div style="font-size:12px;color:var(--muted)">${dateLabel(item.ts)} • ${timeStr(item.ts)}</div>`;
+                          <div style="font-size:12px;color:var(--muted)">${dateLabel(item.ts)}, ${timeStr(item.ts)}</div>`;
 
         const status = document.createElement('div');
         status.className = 'history-status ' + (item.removed ? 'status-removed' : 'status-active');
@@ -525,14 +544,24 @@
 
     function renderDrugs() {
       grid.innerHTML = '';
-      state.drugs.forEach((drug, idx) => {
+      
+      // SORTING: Last dose time descending
+      const sortedDrugs = [...state.drugs].sort((a, b) => {
+        const lastA = lastDoseDate(a.id) || 0;
+        const lastB = lastDoseDate(b.id) || 0;
+        // If both are 0 (no dose), preserve original order
+        if (lastA === 0 && lastB === 0) return 0; 
+        return lastB - lastA; // Recent first
+      });
+
+      sortedDrugs.forEach((drug) => {
         const card = document.createElement('div');
         card.className = 'card';
         card.dataset.id = drug.id;
 
         const strip = document.createElement('div');
         strip.className = 'color-strip';
-        strip.style.background = drug.color || palette[idx % palette.length];
+        strip.style.background = drug.color;
         card.appendChild(strip);
 
         const removeBtn = document.createElement('button');
@@ -545,16 +574,19 @@
         nameEl.className = 'name';
         nameEl.contentEditable = 'true';
         nameEl.spellcheck = false;
-        nameEl.title = 'Click to edit name';
         nameEl.textContent = drug.name;
         nameEl.dataset.prev = drug.name;
+        // Mobile enter key fix for contentEditable
+        nameEl.setAttribute('enterkeyhint', 'done');
 
         const nameErr = document.createElement('div');
         nameErr.className = 'name-error';
         nameErr.textContent = 'This name is already in use.';
 
         nameEl.addEventListener('focus', () => { nameEl.dataset.prev = drug.name; });
-        nameEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); nameEl.blur(); } });
+        nameEl.addEventListener('keydown', (e) => { 
+          if (e.key === 'Enter') { e.preventDefault(); nameEl.blur(); } 
+        });
         nameEl.addEventListener('input', () => {
           const proposed = nameEl.textContent.trim();
           const dup = state.drugs.some(d => d.id !== drug.id && nameKey(d.name) === nameKey(proposed));
@@ -575,10 +607,10 @@
           }
           drug.name = proposed;
           saveState();
-          render();
+          // Don't full re-render here to avoid losing focus/jumpiness, just update state
         });
 
-        // Color picker (moved to bottom later)
+        // Color Picker
         const colorWrap = document.createElement('div');
         colorWrap.className = 'color-picker';
         const colorLabel = document.createElement('label');
@@ -587,9 +619,9 @@
         const colorBtn = document.createElement('button');
         colorBtn.type = 'button';
         colorBtn.className = 'color-select-btn';
-        const current = drug.color || palette[idx % palette.length];
-        colorBtn.style.setProperty('--swatch', current);
-        colorBtn.innerHTML = `<span class="swatch"></span><span class="label">${paletteNames[palette.indexOf(current)] || 'Color'}</span>`;
+        colorBtn.style.setProperty('--swatch', drug.color);
+        const colorName = paletteNames[palette.indexOf(drug.color)] || 'Color';
+        colorBtn.innerHTML = `<span class="swatch"></span><span class="label">${colorName}</span>`;
         colorBtn.setAttribute('aria-haspopup', 'listbox');
         colorBtn.setAttribute('aria-expanded', 'false');
 
@@ -601,24 +633,19 @@
           const opt = document.createElement('div');
           opt.className = 'color-option';
           opt.setAttribute('role', 'option');
-          opt.dataset.value = hex;
           opt.innerHTML = `<span class="swatch" style="--swatch:${hex}"></span><span class="label">${paletteNames[i]}</span>`;
-          if (hex === current) opt.setAttribute('aria-selected', 'true');
-          let picked = false;
-          function onPick(ev) {
-            if (picked) return;
-            picked = true;
-            ev?.stopPropagation?.();
-            ev?.preventDefault?.();
+          if (hex === drug.color) opt.setAttribute('aria-selected', 'true');
+          
+          const onPick = (ev) => {
+            ev?.stopPropagation(); ev?.preventDefault();
             drug.color = hex;
             colorBtn.style.setProperty('--swatch', hex);
             colorBtn.querySelector('.label').textContent = paletteNames[i];
             saveState();
-            render();
+            render(); // Full render to update colors in log
             colorWrap.classList.remove('open');
             colorBtn.setAttribute('aria-expanded', 'false');
-          }
-          opt.addEventListener('pointerup', onPick);
+          };
           opt.addEventListener('click', onPick);
           menu.appendChild(opt);
         });
@@ -637,7 +664,6 @@
         nameRow.className = 'name-row';
         nameRow.appendChild(nameEl);
 
-        // Dose UI: numeric + unit dropdown + Add button
         const doseRow = document.createElement('div');
         doseRow.className = 'dose-grid';
 
@@ -647,26 +673,28 @@
         numInput.placeholder = 'Amount';
         numInput.min = '0';
         numInput.setAttribute('inputmode', 'decimal');
-        numInput.setAttribute('aria-label', `Amount for ${drug.name}`);
+        numInput.setAttribute('enterkeyhint', 'done'); // Mobile hint
 
         const unitSelect = document.createElement('select');
-        unitSelect.setAttribute('aria-label', `Unit for ${drug.name}`);
         for (const u of UNIT_OPTIONS) {
           const opt = document.createElement('option');
           opt.value = u.value; opt.textContent = u.label; unitSelect.appendChild(opt);
         }
-        unitSelect.value = drug.lastUnit || 'mg'; // remember last used unit per drug
+        unitSelect.value = drug.lastUnit || 'mg';
 
         const addBtn = document.createElement('button');
         addBtn.className = 'add-btn';
         addBtn.textContent = 'Add';
-        addBtn.addEventListener('click', () => { addEntryStandard(drug.id, drug.name, numInput, unitSelect, drug.color); });
+        
+        const onAdd = () => addEntryStandard(drug.id, drug.name, numInput, unitSelect, drug.color);
+        addBtn.addEventListener('click', onAdd);
+        // Ensure Enter on input triggers add
+        numInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); onAdd(); } });
 
         doseRow.appendChild(numInput);
         doseRow.appendChild(unitSelect);
         doseRow.appendChild(addBtn);
 
-        // Meta row: Total + Last Dose (side-by-side)
         const meta = document.createElement('div');
         meta.className = 'meta';
         meta.id = `meta-${drug.id}`;
@@ -679,17 +707,14 @@
         meta.appendChild(totalSpan);
         meta.appendChild(lastSpan);
 
-        // Assemble card (color picker moved to bottom, below meta)
         card.appendChild(nameRow);
         card.appendChild(doseRow);
         card.appendChild(meta);
         card.appendChild(colorWrap);
 
-        numInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addBtn.click(); } });
-
         removeBtn.addEventListener('click', async () => {
-          const labelText = drug?.name ? `the category "${drug.name}"` : 'this category';
-          const ok = await openConfirm(`Are you sure you want to remove ${labelText}?`);
+          const labelText = drug.name ? `the category "${drug.name}"` : 'this category';
+          const ok = await openConfirm(`Remove ${labelText}?`);
           if (ok) { removeDrug(drug.id); showToast('Category removed.'); }
         });
 
@@ -704,17 +729,10 @@
       logBody.innerHTML = '';
       if (!entries.length) {
         logBody.innerHTML = '<tr class="empty-row"><td colspan="5">No entries yet — add a dosage above to get started.</td></tr>';
-        // ensure totals + last dose clear when no entries
-        state.drugs.forEach(d => {
-          const totalEl = document.getElementById(`meta-total-${d.id}`);
-          if (totalEl) totalEl.textContent = totalsForDrugLabel(d.id);
-          const lastEl = document.getElementById(`last-${d.id}`);
-          if (lastEl) lastEl.textContent = 'Last Dose: —';
-        });
         return;
       }
 
-      // running totals across ALL days (for the log table's Total column)
+      // Global totals per entry ID (for display)
       const totalsByEntryGlobal = new Map();
       const sumsByNameGlobal = new Map();
       const ascAll = [...state.entries].sort((a,b)=> a.ts - b.ts || (a.id > b.id ? 1 : -1));
@@ -730,9 +748,13 @@
         totalsByEntryGlobal.set(e.id, parts.length ? parts.join(' • ') : '—');
       }
 
-      // Group by date
       const groups = {};
-      for (const e of entries) { const k = dayKey(e.ts); (groups[k] ||= []).push(e); }
+      for (const e of entries) { 
+        const k = dayKey(e.ts); 
+        // COMPATIBILITY FIX: Changed from ||= to standard assignment
+        if (!groups[k]) groups[k] = [];
+        groups[k].push(e); 
+      }
       const dayKeys = Object.keys(groups).sort((a,b) => (a<b?1:-1));
 
       for (const dk of dayKeys) {
@@ -740,7 +762,10 @@
         const trDate = document.createElement('tr');
         trDate.className = 'date-row';
         const td = document.createElement('td');
-        td.colSpan = 5; td.textContent = dateLabel(d); trDate.appendChild(td); logBody.appendChild(trDate);
+        td.colSpan = 5; 
+        // Changed date format here
+        td.textContent = dateLabel(d); 
+        trDate.appendChild(td); logBody.appendChild(trDate);
 
         const dayEntries = groups[dk];
         const desc = [...dayEntries].sort((a,b)=> b.ts - a.ts);
@@ -748,15 +773,12 @@
           const tr = document.createElement('tr');
           tr.dataset.entryId = e.id;
 
-          // Drug cell with subtle color chip background
           const tdDrug = document.createElement('td');
           const chip = document.createElement('span');
           chip.className = 'drug-chip';
           const bg = colorForEntry(e) || '#8ea8ff';
-          const tint = hexToRgba(bg, 0.18);
-          const border = hexToRgba(bg, 0.35);
-          chip.style.background = tint;
-          chip.style.borderColor = border;
+          chip.style.background = hexToRgba(bg, 0.18);
+          chip.style.borderColor = hexToRgba(bg, 0.35);
           const nameSpan = document.createElement('span');
           nameSpan.textContent = lookupDrugName(e.drugId) || e.drugNameAtEntry || 'Drug';
           chip.appendChild(nameSpan);
@@ -777,23 +799,27 @@
             amountInput.id = `edit-num-${e.id}`;
             amountInput.value = (e.value != null && isFinite(e.value)) ? e.value : '';
             amountInput.setAttribute('inputmode', 'decimal');
-            amountInput.setAttribute('aria-label', 'Amount');
+            amountInput.setAttribute('enterkeyhint', 'done');
 
             const unitSelect = document.createElement('select');
             unitSelect.id = `edit-unit-${e.id}`;
-            unitSelect.setAttribute('aria-label', 'Unit');
             for (const u of UNIT_OPTIONS) { const opt = document.createElement('option'); opt.value = u.value; opt.textContent = u.label; unitSelect.appendChild(opt); }
             unitSelect.value = e.unitRaw || e.unit || 'mg';
 
-            // RESTORED: single datetime-local editor (old behavior)
             const dtInput = document.createElement('input');
             dtInput.type = 'datetime-local';
             dtInput.id = `edit-datetime-${e.id}`;
             dtInput.className = 'edit-input';
             dtInput.value = formatAsDatetimeLocal(e.ts);
-            dtInput.setAttribute('aria-label', 'Date & time');
+            dtInput.setAttribute('enterkeyhint', 'done');
 
-            const enterSave = (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); saveEdit(e.id); } };
+            const enterSave = (ev) => { 
+                // Explicit check for Enter key
+                if (ev.key === 'Enter' || ev.keyCode === 13) { 
+                    ev.preventDefault(); 
+                    saveEdit(e.id); 
+                } 
+            };
             amountInput.addEventListener('keydown', enterSave);
             unitSelect.addEventListener('keydown', enterSave);
             dtInput.addEventListener('keydown', enterSave);
@@ -817,23 +843,26 @@
           if (editingId === e.id) {
             const saveBtn = document.createElement('button');
             saveBtn.className = 'icon-btn';
+            saveBtn.type = 'button'; // Prevent form submit behavior
             saveBtn.textContent = '✔';
             saveBtn.title = 'Save';
-            saveBtn.dataset.action = 'save-edit';
-            saveBtn.dataset.entryId = e.id;
+            // MOBILE FIX: touchstart ensures tap is caught before blur/keyboard hide
+            saveBtn.addEventListener('touchstart', (ev) => { ev.preventDefault(); saveEdit(e.id); });
+            saveBtn.addEventListener('click', () => saveEdit(e.id));
 
             const cancelBtn = document.createElement('button');
             cancelBtn.className = 'icon-btn';
+            cancelBtn.type = 'button';
             cancelBtn.textContent = '✕';
             cancelBtn.title = 'Cancel';
-            cancelBtn.dataset.action = 'cancel-edit';
-            cancelBtn.dataset.entryId = e.id;
+            cancelBtn.addEventListener('click', cancelEdit);
 
             tdActions.appendChild(saveBtn);
             tdActions.appendChild(cancelBtn);
           } else {
             const editBtn = document.createElement('button');
             editBtn.className = 'icon-btn';
+            editBtn.type = 'button';
             editBtn.textContent = '✎';
             editBtn.title = 'Edit';
             editBtn.dataset.action = 'edit-entry';
@@ -841,6 +870,7 @@
 
             const delBtn = document.createElement('button');
             delBtn.className = 'icon-btn icon-danger';
+            delBtn.type = 'button';
             delBtn.textContent = '×';
             delBtn.title = 'Remove this entry';
             delBtn.dataset.action = 'remove-entry';
@@ -859,7 +889,6 @@
         }
       }
 
-      // Update per-card totals (ALL TIME) without clobbering Last Dose
       state.drugs.forEach(d => {
         const totalEl = document.getElementById(`meta-total-${d.id}`);
         if (totalEl) totalEl.textContent = totalsForDrugLabel(d.id);
@@ -882,7 +911,7 @@
     function totalsForDrugLabel(drugId) {
       const units = new Map();
       for (const e of state.entries) {
-        if (e.drugId !== drugId) continue;            // ← compare IDs
+        if (e.drugId !== drugId) continue;
         if (e.value == null || !isFinite(e.value)) continue;
         const u = normalizeUnit(e.unit || '');
         units.set(u, (units.get(u) || 0) + e.value);
@@ -893,20 +922,10 @@
       return `Total: ${parts.join(' • ')}`;
     }
 
-    // --- Last Dose helpers ---
-    function lastDoseDate(drugId) {
-      let latest = null;
-      for (const e of state.entries) {
-        if (e.drugId !== drugId) continue;
-        if (!latest || e.ts > latest) latest = e.ts;
-      }
-      return latest;
-    }
-
     function formatSinceLabel(date) {
-      if (!date) return 'Last Dose: —';
+      if (!date || isNaN(date)) return 'Last Dose: —';
       const now = new Date();
-      let diffMin = Math.floor((now - date) / 60000); // minutes
+      let diffMin = Math.floor((now - date) / 60000); 
       const inFuture = diffMin < 0;
       if (inFuture) diffMin = Math.abs(diffMin);
       if (diffMin < 1) return inFuture ? 'Last Dose: in &lt;1m' : 'Last Dose: just now';
@@ -927,7 +946,7 @@
       });
     }
 
-    // --- Add entries (standard only) ---
+    // --- Actions ---
     function addEntryStandard(drugId, currentDrugName, numInput, unitSelect, colorAtEntry) {
       const raw = numInput.value;
       const value = parseFloat(raw);
@@ -946,15 +965,13 @@
       const entry = { id: uid('e'), ts, drugId, drugNameAtEntry: currentDrugName, dosageText, value, unit: unitNorm, unitRaw };
       state.entries.push(entry);
 
-      // Remember last unit per drug
       const drug = state.drugs.find(d => d.id === drugId);
       if (drug) { drug.lastUnit = unitRaw; }
 
-      // History
       state.history.push({ id: entry.id, ts: entry.ts, drugNameAtEntry: entry.drugNameAtEntry, dosageText, value, unit: unitNorm, colorAtEntry, addedAt: new Date(), removed: false, removedAt: null });
       saveState();
       numInput.value = '';
-      render();
+      render(); // Re-renders and effectively re-sorts cards if "Last Dose" changed logic
       numInput.focus();
     }
 
@@ -984,16 +1001,12 @@
       if (!amountRaw || !isFinite(value) || value <= 0) {
         showToast('Enter a positive amount.');
         amountEl.focus();
-        amountEl.style.boxShadow = '0 0 0 4px rgba(239, 68, 68, 0.35)';
-        setTimeout(() => (amountEl.style.boxShadow = ''), 400);
         return;
       }
       const unitRaw = unitEl.value;
-
-      // Build new timestamp from a single datetime-local input
       let newDate = new Date(e.ts);
       if (dtEl && dtEl.value) {
-        const v = dtEl.value; // expected YYYY-MM-DDTHH:MM
+        const v = dtEl.value; 
         const [datePart, timePart] = v.split('T');
         if (datePart && timePart) {
           const [Y, M, D] = datePart.split('-').map(Number);
@@ -1010,7 +1023,6 @@
       e.dosageText = displayValueUnit(value, unitRaw);
       e.ts = newDate;
 
-      // update last unit on the live drug as well
       const d = state.drugs.find(d => d.id === e.drugId);
       if (d) d.lastUnit = unitRaw;
 
@@ -1021,22 +1033,21 @@
 
     function cancelEdit() { editingId = null; render(); }
 
-    let editingId = null; // entry currently being edited
-
+    let editingId = null;
     function syncEditingClass() { document.body.classList.toggle('editing', !!editingId); }
 
-    // --- Event delegation ---
+    // Event delegation
     document.addEventListener('click', async (e) => {
       if (e.target && e.target.id === 'clear-log') {
         if (!state.entries.length) return;
-        const ok = await openConfirm('Are you sure you want to clear all entries?');
+        const ok = await openConfirm('Clear all displayed log entries? (History is kept)');
         if (ok) {
           const ids = state.entries.map(x => x.id);
           for (const id of ids) { const h = state.history.find(x => x.id === id); if (h && !h.removed) { h.removed = true; h.removedAt = new Date(); } }
           state.entries = [];
           saveState();
           render();
-          showToast('All entries cleared.');
+          showToast('Entries cleared.');
         }
       }
 
@@ -1053,10 +1064,8 @@
       if (actionBtn) {
         const action = actionBtn.dataset.action;
         const id = actionBtn.dataset.entryId;
-        if (action === 'remove-entry') { const ok = await openConfirm('Are you sure you want to remove this entry?'); if (ok) { removeEntry(id); showToast('Entry removed.'); } }
+        if (action === 'remove-entry') { const ok = await openConfirm('Remove this entry?'); if (ok) { removeEntry(id); showToast('Entry removed.'); } }
         if (action === 'edit-entry') startEdit(id);
-        if (action === 'save-edit') saveEdit(id);
-        if (action === 'cancel-edit') cancelEdit();
       }
     });
 
@@ -1080,11 +1089,14 @@
       }
     });
 
-    // Periodic updater for "Last Dose" (every minute)
-    setInterval(updateLastDoseLabels, 60000); // simplified
+    setInterval(updateLastDoseLabels, 60000);
 
-    // Initial render
-    render();
+    // Initial render with safety catch
+    try {
+      render();
+    } catch(e) {
+      console.error("Initial render failed", e);
+    }
   </script>
 </body>
 </html>
