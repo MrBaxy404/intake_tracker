@@ -51,25 +51,35 @@
     header h1 { font-size: clamp(22px, 3vw, 32px); margin: 0 0 6px; letter-spacing: 0.3px; }
     header p { margin: 0; color: var(--muted); }
 
-    /* Reset Button (Top Right) */
-    .reset-all-btn {
-      padding: 8px 12px; font-size: 13px; font-weight: 600;
-      background: rgba(239, 68, 68, 0.15); color: #fca5a5;
-      border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 10px;
-      cursor: pointer; transition: background 0.2s;
-      white-space: nowrap;
-    }
-    .reset-all-btn:hover { background: rgba(239, 68, 68, 0.25); }
-
     .inline-link {
       background: transparent; border: 0; padding: 0; margin-left: 6px; color: var(--muted);
       text-decoration: underline; font-weight: 500; cursor: pointer;
     }
     .inline-link:hover { text-decoration: none; }
 
-    .toolbar { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
-    .toolbar button { padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); cursor: pointer; }
-    .toolbar button:hover { background: rgba(255,255,255,0.12); }
+    /* Toolbar & Reset Button */
+    .toolbar { 
+      display: flex; 
+      justify-content: space-between; /* Pushes buttons to edges */
+      gap: 12px; 
+      margin-bottom: 16px; 
+      align-items: center; 
+      flex-wrap: wrap; 
+    }
+    
+    .toolbar button, .reset-all-btn { 
+      padding: 10px 14px; border-radius: 10px; 
+      border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); 
+      color: var(--text); cursor: pointer; font-weight: 600; font-size: 14px;
+    }
+    .toolbar button:hover, .reset-all-btn:hover { background: rgba(255,255,255,0.12); }
+
+    .reset-all-btn {
+      background: rgba(239, 68, 68, 0.2); /* Stronger red background */
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.5); /* Stronger border */
+    }
+    .reset-all-btn:hover { background: rgba(239, 68, 68, 0.35); }
 
     .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--grid-gap); }
 
@@ -123,6 +133,9 @@
     .repeat-btn { color: var(--accent-2); border-color: rgba(79, 124, 255, 0.3); background: rgba(79, 124, 255, 0.1); }
     .repeat-btn:hover { background: rgba(79, 124, 255, 0.2); }
 
+    /* Hide Remove button when collapsed */
+    .card.collapsed .remove { display: none; }
+
     /* Card Body (Hidden when collapsed) */
     .card-body { padding: 0 18px 18px 18px; display: flex; flex-direction: column; gap: 12px; }
     .card.collapsed .card-body { display: none; }
@@ -140,9 +153,9 @@
     .color-option .swatch { width: 14px; height: 14px; border-radius: 999px; background: var(--swatch); box-shadow: 0 0 0 1px rgba(255,255,255,0.2) inset; }
     .color-option .label { font-size: 14px; }
 
-    input[type="text"], input[type="datetime-local"], input[type="number"], select { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); outline: none; transition: border-color .15s ease, background .15s ease, box-shadow .15s ease; }
+    input[type="text"], input[type="time"], input[type="number"], select { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); outline: none; transition: border-color .15s ease, background .15s ease, box-shadow .15s ease; }
     input[type="text"]::placeholder { color: #9aa4d3; }
-    input[type="text"]:focus, input[type="datetime-local"]:focus, input[type="number"]:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(79, 124, 255, 0.25); background: rgba(255,255,255,0.1); }
+    input[type="text"]:focus, input[type="time"]:focus, input[type="number"]:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(79, 124, 255, 0.25); background: rgba(255,255,255,0.1); }
 
     input[type="number"]::-webkit-outer-spin-button,
     input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
@@ -228,27 +241,27 @@
     @media (max-width: 720px) {
       .container { padding: 16px; margin: 20px auto; }
       header { flex-direction: column; gap: 16px; }
-      .reset-all-btn { align-self: flex-end; margin-top: -48px; } /* Pull up next to title on small screens */
       
       .grid { grid-template-columns: 1fr; gap: 12px; }
       .dose-grid { grid-template-columns: 1fr 120px auto; }
       .toolbar button { padding: 12px 14px; }
       .log-header { padding: 12px; }
       .log { overflow-x: hidden; }
-      table { table-layout: fixed; width: 100%; }
-      thead th { white-space: nowrap; }
       
-      /* Updated Column Widths (Removed Total, Expanded Dose) */
-      thead th:nth-child(1), tbody td:nth-child(1) { width: 30%; } /* Drug */
-      thead th:nth-child(2), tbody td:nth-child(2) { width: 35%; } /* Dose (Expanded) */
-      thead th:nth-child(3), tbody td:nth-child(3) { width: 20%; } /* Time */
-      thead th:nth-child(4), tbody td:nth-child(4) { width: 15%; text-align: right; } /* Actions */
+      /* Mobile Table Adjustments: wrap text, no fixed widths, ensure visibility */
+      table { width: 100%; table-layout: auto; }
+      thead th { white-space: normal; padding: 8px; }
+      tbody td { padding: 10px 8px; }
       
+      thead th:nth-child(1), tbody td:nth-child(1) { width: auto; } /* Drug */
+      thead th:nth-child(2), tbody td:nth-child(2) { width: auto; } /* Dose */
+      thead th:nth-child(3), tbody td:nth-child(3) { width: auto; } /* Time */
+      thead th:nth-child(4), tbody td:nth-child(4) { width: auto; text-align: right; } /* Actions */
+
       tbody td:nth-child(2) { white-space: normal; word-break: normal; overflow-wrap: anywhere; }
-      tbody td:nth-child(1) .drug-chip { display: inline-flex; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-      thead th, tbody td { padding: 10px; }
+      tbody td:nth-child(1) .drug-chip { display: inline-flex; max-width: 100%; white-space: normal; }
+      
       body.editing .log { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-      body.editing table { min-width: 720px; }
       body.editing #open-history { display: none !important; }
     }
   </style>
@@ -260,11 +273,12 @@
         <h1>Drug Tracker</h1>
         <p>Track drug dosage and timing easily on any device.<a href="#" id="privacy-open" class="inline-link" aria-haspopup="dialog" aria-controls="privacy" role="button">Privacy Information</a></p>
       </div>
-      <button id="reset-all" class="reset-all-btn" title="Clear drugs, entries, and history">Reset Everything</button>
+      <!-- Reset button moved to toolbar -->
     </header>
 
     <div class="toolbar">
       <button id="add-med">+ Add Drug</button>
+      <button id="reset-all" class="reset-all-btn" title="Clear drugs, entries, and history">Reset Everything</button>
     </div>
 
     <section class="grid" id="drug-grid" aria-label="Drug Inputs"></section>
@@ -280,7 +294,6 @@
         <thead>
           <tr>
             <th scope="col">Drug</th>
-            <!-- Removed Total Column -->
             <th scope="col">Doses</th>
             <th scope="col">Time</th>
             <th scope="col" aria-label="Actions"></th>
@@ -384,10 +397,10 @@
 
     function uid(prefix='id') { return `${prefix}_${Math.random().toString(36).slice(2,9)}_${Date.now().toString(36)}`; }
 
-    function formatAsDatetimeLocal(d) {
+    function formatAsTime(d) {
       if (!d || isNaN(d)) return '';
       const pad = (n) => String(n).padStart(2, '0');
-      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
     }
 
     function nameKey(str) { return (str || '').toString().trim().toLowerCase(); }
@@ -611,7 +624,6 @@
            drug.expanded = !drug.expanded;
            saveState();
            renderDrugs(); // Re-render only drugs to update classes
-           // Note: Full render() is expensive, renderDrugs() handles UI toggle
         };
 
         const strip = document.createElement('div');
@@ -637,20 +649,17 @@
         const actionsDiv = document.createElement('div');
         actionsDiv.className = 'card-actions';
 
-        // Repeat Last Button (Visible mainly when collapsed, but technically always in header)
-        // Logic: Only show if there is a history
+        // Repeat Last Button
         const lastEntry = getLastEntry(drug.id);
         if (lastEntry) {
           const repeatBtn = document.createElement('button');
           repeatBtn.className = 'btn-sm repeat-btn';
-          repeatBtn.textContent = `Repeat ${displayValueUnit(lastEntry.value, lastEntry.unit)}`;
-          repeatBtn.title = 'Add same dose as last time';
+          repeatBtn.textContent = `Repeat Last Dose`; // Changed text
+          repeatBtn.title = `Add ${displayValueUnit(lastEntry.value, lastEntry.unit)} (same as last)`;
           repeatBtn.onclick = (e) => {
-            e.stopPropagation(); // CRITICAL: Prevent expansion
+            e.stopPropagation();
             addEntryStandard(drug.id, drug.name, null, null, drug.color, lastEntry.value, lastEntry.unitRaw);
           };
-          // Only visible if collapsed? User asked "visible in collapsed". 
-          // It's good to be visible always, but CSS hides body when collapsed.
           actionsDiv.appendChild(repeatBtn);
         }
 
@@ -693,7 +702,13 @@
         // Name Editing Logic
         nameEl.addEventListener('focus', () => { nameEl.dataset.prev = drug.name; });
         nameEl.addEventListener('keydown', (e) => { 
-            if (e.key === 'Enter') { e.preventDefault(); nameEl.blur(); }
+            if (e.key === 'Enter') { 
+              e.preventDefault(); 
+              nameEl.blur(); 
+              // Immediately focus the amount input
+              const input = card.querySelector('input[type="number"]');
+              if (input) input.focus();
+            }
         });
         nameEl.addEventListener('input', () => {
           const proposed = nameEl.textContent.trim();
@@ -730,6 +745,11 @@
         numInput.type = 'number';
         numInput.setAttribute('inputmode', 'decimal');
         numInput.setAttribute('pattern', '[0-9]*'); 
+        // Force disable autocomplete and ignore password managers
+        numInput.setAttribute('autocomplete', 'new-password'); 
+        numInput.setAttribute('data-lpignore', 'true'); // LastPass
+        numInput.setAttribute('data-1p-ignore', 'true'); // 1Password
+        numInput.name = 'input_qty_' + Math.random().toString(36).slice(2); // Random name
         numInput.step = 'any';
         numInput.placeholder = 'Amount';
         numInput.min = '0';
@@ -818,7 +838,6 @@
       const entries = [...state.entries].sort((a,b) => b.ts - a.ts);
       logBody.innerHTML = '';
       if (!entries.length) {
-        // Updated colspan to 4 since we removed one column
         logBody.innerHTML = '<tr class="empty-row"><td colspan="4">No entries yet — add a dosage above to get started.</td></tr>';
         return;
       }
@@ -836,7 +855,7 @@
         const trDate = document.createElement('tr');
         trDate.className = 'date-row';
         const td = document.createElement('td');
-        td.colSpan = 4; // Updated colspan
+        td.colSpan = 4;
         td.textContent = dateLabel(d); 
         trDate.appendChild(td); logBody.appendChild(trDate);
 
@@ -856,8 +875,6 @@
           nameSpan.textContent = lookupDrugName(e.drugId) || e.drugNameAtEntry || 'Drug';
           chip.appendChild(nameSpan);
           tdDrug.appendChild(chip);
-
-          // Removed Total Column (tdTotal)
 
           const tdDose = document.createElement('td');
           const tdTimeCell = document.createElement('td');
@@ -880,10 +897,10 @@
             unitSelect.value = e.unitRaw || e.unit || 'mg';
 
             const dtInput = document.createElement('input');
-            dtInput.type = 'datetime-local';
-            dtInput.id = `edit-datetime-${e.id}`;
+            dtInput.type = 'time'; // CHANGED TO TIME
+            dtInput.id = `edit-time-${e.id}`;
             dtInput.className = 'edit-input';
-            dtInput.value = formatAsDatetimeLocal(e.ts);
+            dtInput.value = formatAsTime(e.ts);
             dtInput.setAttribute('enterkeyhint', 'done');
 
             const enterSave = (ev) => { 
@@ -898,7 +915,7 @@
 
             const amtWrap = document.createElement('div');
             amtWrap.style.display = 'grid';
-            amtWrap.style.gridTemplateColumns = '1fr 100px'; // Adjust for edit
+            amtWrap.style.gridTemplateColumns = '1fr 100px'; 
             amtWrap.style.gap = '8px';
             amtWrap.appendChild(amountInput);
             amtWrap.appendChild(unitSelect);
@@ -952,7 +969,6 @@
           }
 
           tr.appendChild(tdDrug);
-          // tr.appendChild(tdTotal); REMOVED
           tr.appendChild(tdDose);
           tr.appendChild(tdTimeCell);
           tr.appendChild(tdActions);
@@ -1078,9 +1094,9 @@
     function saveEdit(entryId) {
       const amountEl = document.getElementById(`edit-num-${entryId}`);
       const unitEl = document.getElementById(`edit-unit-${entryId}`);
-      const dtEl = document.getElementById(`edit-datetime-${entryId}`);
+      const timeEl = document.getElementById(`edit-time-${entryId}`);
       const e = state.entries.find(x => x.id === entryId);
-      if (!e || !amountEl || !unitEl || !dtEl) return;
+      if (!e || !amountEl || !unitEl || !timeEl) return;
 
       const amountRaw = amountEl.value;
       const value = parseFloat(amountRaw);
@@ -1090,16 +1106,14 @@
         return;
       }
       const unitRaw = unitEl.value;
+      
+      // Handle Time Only Edit (preserve original date)
       let newDate = new Date(e.ts);
-      if (dtEl && dtEl.value) {
-        const v = dtEl.value; 
-        const [datePart, timePart] = v.split('T');
-        if (datePart && timePart) {
-          const [Y, M, D] = datePart.split('-').map(Number);
-          const [hh, mm] = timePart.split(':').map(Number);
-          if (Y && M && D && !isNaN(hh) && !isNaN(mm)) {
-            newDate = new Date(Y, M - 1, D, hh, mm, 0, 0);
-          }
+      if (timeEl && timeEl.value) {
+        const [hh, mm] = timeEl.value.split(':').map(Number);
+        if (!isNaN(hh) && !isNaN(mm)) {
+            newDate.setHours(hh);
+            newDate.setMinutes(mm);
         }
       }
 
@@ -1153,7 +1167,6 @@
              const nameInput = card.querySelector('.name');
              if (nameInput) {
                  nameInput.focus();
-                 // Optional: Select all text so they can overwrite "Drug X" immediately
                  const range = document.createRange();
                  range.selectNodeContents(nameInput);
                  const sel = window.getSelection();
