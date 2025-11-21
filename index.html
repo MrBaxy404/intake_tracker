@@ -165,6 +165,7 @@
     input[type="text"]::placeholder { color: #9aa4d3; }
     input[type="text"]:focus, input[type="time"]:focus, input[type="number"]:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(79, 124, 255, 0.25); background: rgba(255,255,255,0.1); }
 
+    /* Remove spinner from number inputs */
     input[type="number"]::-webkit-outer-spin-button,
     input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     input[type="number"] { -moz-appearance: textfield; }
@@ -645,6 +646,12 @@
         nameInput.dataset.prev = drug.name;
         nameInput.setAttribute('enterkeyhint', 'done');
         nameInput.setAttribute('aria-label', 'Drug Name');
+        
+        // Disable autofill/autocorrect
+        nameInput.setAttribute('autocomplete', 'off');
+        nameInput.setAttribute('autocorrect', 'off');
+        nameInput.setAttribute('autocapitalize', 'off');
+        nameInput.setAttribute('spellcheck', 'false');
 
         const actionsDiv = document.createElement('div');
         actionsDiv.className = 'card-actions';
@@ -697,43 +704,7 @@
         headerDiv.appendChild(nameErr);
         headerDiv.appendChild(meta);
         card.appendChild(headerDiv);
-
-        // Name Editing Logic
-        nameInput.addEventListener('click', (e) => { e.stopPropagation(); }); // Prevent collapse
-        nameInput.addEventListener('focus', () => { 
-            nameInput.dataset.prev = drug.name;
-            nameInput.select(); // Auto-select all text for easy overwrite
-        });
-        nameInput.addEventListener('keydown', (e) => { 
-            if (e.key === 'Enter') { 
-              e.preventDefault(); 
-              nameInput.blur(); 
-              const input = card.querySelector('input[type="number"]');
-              if (input) input.focus();
-            }
-        });
-        nameInput.addEventListener('input', () => {
-          const proposed = nameInput.value.trim();
-          const dup = state.drugs.some(d => d.id !== drug.id && nameKey(d.name) === nameKey(proposed));
-          if (dup) { nameInput.classList.add('invalid'); nameErr.style.display = 'block'; }
-          else { nameInput.classList.remove('invalid'); nameErr.style.display = 'none'; }
-        });
-        nameInput.addEventListener('blur', () => {
-          const proposed = nameInput.value.trim();
-          const prev = nameInput.dataset.prev || drug.name;
-          const isEmpty = proposed.length === 0;
-          const dup = state.drugs.some(d => d.id !== drug.id && nameKey(d.name) === nameKey(proposed));
-          if (isEmpty || dup) {
-            nameInput.value = prev;
-            nameInput.classList.remove('invalid');
-            nameErr.style.display = dup ? 'block' : 'none';
-            setTimeout(() => { nameErr.style.display = 'none'; }, 2000);
-            return;
-          }
-          drug.name = proposed;
-          saveState();
-        });
-
+        
         // -- Card Body (Hidden if collapsed) --
         const bodyDiv = document.createElement('div');
         bodyDiv.className = 'card-body';
@@ -743,9 +714,10 @@
         doseRow.className = 'dose-grid';
 
         const numInput = document.createElement('input');
-        numInput.type = 'number';
-        numInput.step = 'any';
+        // Changed to text to support decimals regardless of locale
+        numInput.type = 'text'; 
         numInput.setAttribute('inputmode', 'decimal'); // Triggers numeric pad on mobile
+        numInput.setAttribute('pattern', '[0-9]*[.,]?[0-9]*');
         numInput.setAttribute('autocomplete', 'off');
 
         const unitSelect = document.createElement('select');
@@ -766,6 +738,60 @@
         doseRow.appendChild(numInput);
         doseRow.appendChild(unitSelect);
         doseRow.appendChild(addBtn);
+
+        // Name Editing Logic
+        nameInput.addEventListener('click', (e) => { e.stopPropagation(); }); // Prevent collapse
+        nameInput.addEventListener('focus', () => { 
+            nameInput.dataset.prev = drug.name;
+            nameInput.select(); // Auto-select all text for easy overwrite
+        });
+        nameInput.addEventListener('keydown', (e) => { 
+            if (e.key === 'Enter') { 
+              e.preventDefault(); 
+              nameInput.blur(); 
+              // Focus the num input after editing name
+              numInput.focus();
+            }
+        });
+        nameInput.addEventListener('input', () => {
+          const proposed = nameInput.value.trim();
+          const dup = state.drugs.some(d => d.id !== drug.id && nameKey(d.name) === nameKey(proposed));
+          if (dup) { nameInput.classList.add('invalid'); nameErr.style.display = 'block'; }
+          else { nameInput.classList.remove('invalid'); nameErr.style.display = 'none'; }
+          
+          // Smart Unit Detection
+          const low = proposed.toLowerCase();
+          let autoUnit = null;
+          
+          // "Start with" logic
+          const linePrefixes = ["amph", "speed", "k ", "ket", "cocaine", "coke", "meph", "3m", "4m"];
+          if (linePrefixes.some(p => low.startsWith(p.toLowerCase()))) {
+            autoUnit = 'line';
+          } else if (low.includes('lsd')) {
+            autoUnit = 'µg';
+          } else if (low.includes('shroom')) {
+            autoUnit = 'g';
+          }
+          
+          if (autoUnit) {
+            unitSelect.value = autoUnit;
+          }
+        });
+        nameInput.addEventListener('blur', () => {
+          const proposed = nameInput.value.trim();
+          const prev = nameInput.dataset.prev || drug.name;
+          const isEmpty = proposed.length === 0;
+          const dup = state.drugs.some(d => d.id !== drug.id && nameKey(d.name) === nameKey(proposed));
+          if (isEmpty || dup) {
+            nameInput.value = prev;
+            nameInput.classList.remove('invalid');
+            nameErr.style.display = dup ? 'block' : 'none';
+            setTimeout(() => { nameErr.style.display = 'none'; }, 2000);
+            return;
+          }
+          drug.name = proposed;
+          saveState();
+        });
 
         // Color Picker
         const colorWrap = document.createElement('div');
@@ -874,14 +900,13 @@
 
           if (editingId === e.id) {
             const amountInput = document.createElement('input');
-            amountInput.type = 'number';
-            amountInput.step = 'any';
-            amountInput.min = '0';
+            // Changed to text to allow decimals regardless of locale
+            amountInput.type = 'text';
             amountInput.className = 'edit-input';
             amountInput.id = `edit-num-${e.id}`;
             amountInput.value = (e.value != null && isFinite(e.value)) ? e.value : '';
             amountInput.setAttribute('inputmode', 'decimal');
-            amountInput.setAttribute('pattern', '[0-9]*');
+            amountInput.setAttribute('pattern', '[0-9]*[.,]?[0-9]*');
             amountInput.setAttribute('enterkeyhint', 'done');
 
             const unitSelect = document.createElement('select');
@@ -1036,7 +1061,7 @@
         unitRaw = explicitUnitRaw;
       } else {
         // Manual input path
-        const raw = numInput.value;
+        const raw = numInput.value.replace(',', '.'); // Handle comma decimals
         value = parseFloat(raw);
         if (!raw || !isFinite(value) || value <= 0) {
           showToast('Enter a positive amount.');
@@ -1091,9 +1116,9 @@
       const e = state.entries.find(x => x.id === entryId);
       if (!e || !amountEl || !unitEl || !timeEl) return;
 
-      const amountRaw = amountEl.value;
+      const amountRaw = amountEl.value.replace(',', '.'); // Handle comma decimals
       const value = parseFloat(amountRaw);
-      if (!amountRaw || !isFinite(value) || value <= 0) {
+      if (!amountEl.value || !isFinite(value) || value <= 0) {
         showToast('Enter a positive amount.');
         amountEl.focus();
         return;
